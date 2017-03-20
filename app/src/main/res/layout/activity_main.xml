@@ -1,0 +1,39 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Analyzer" >
+
+    <Button
+        android:id="@+id/clearButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignTop="@+id/mainText"
+        android:text="Clear" />
+
+    <Button
+        android:id="@+id/saveButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/clearButton"
+        android:layout_below="@+id/clearButton"
+        android:text="Save List" />
+
+    <TextView
+        android:id="@+id/mainText"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:text="hello_world"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="13dp"
+        android:layout_marginTop="18dp" />
+
+    <TextView
+        android:id="@+id/toastView"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:gravity="center_vertical|center_horizontal" />
+
+</RelativeLayout>
