@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
 import java.util.List;
 import android.Manifest;
 import android.app.Activity;
@@ -26,6 +27,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.api.services.sheets.v4.model.Sheet;
 
 public class Analyzer extends Activity {
 
@@ -118,6 +121,39 @@ public class Analyzer extends Activity {
 
         // This method is called when the number of wifi connections changes
         public void onReceive(Context c, Intent intent) {
+            /////////////////////////////////////////////
+            //for the values that you want to input, create a list of object lists
+            List<List<Object>> values = new ArrayList<>();
+
+            //Where each value represents the list of objects that is to be written to a range
+            //I simply want to edit a single row, so I use a single list of objects
+            List<Object> data1 = new ArrayList<>();
+            List<Object> data2 = new ArrayList<>();
+            data1.add("Network");
+            data1.add("SSID");
+            data1.add("BSSID");
+            data1.add("Frequency");
+            data1.add("Level of Intensity");
+            data1.add("Capabilities");
+            data2.add("#1");
+            data2.add("DEUSVULT");
+            data2.add("56:17:31:79:d0:5b");
+            data2.add("2412");
+            data2.add("9");
+            data2.add("[WPA2-PSK-CCMP][EES]");
+
+
+            //There are obviously more dynamic ways to do these, but you get the picture
+            values.add(data1);
+            values.add(data2);
+
+            SheetApi api = new SheetApi();
+            api.setWifiResults(values);
+            api.getResultsFromApi();
+
+            //startActivity(new Intent(getApplicationContext(), SheetApi.class));
+            //Log.d("LOG",api.wifiResults.toString());
+            /////////////////////////////////////////////
 
             Log.d("LOG","Updated connection list");
             sb = new StringBuilder();

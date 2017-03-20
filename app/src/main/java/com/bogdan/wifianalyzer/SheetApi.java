@@ -52,6 +52,8 @@ public class SheetApi extends Activity implements EasyPermissions.PermissionCall
     private Button mCallApiButton;
     ProgressDialog mProgress;
 
+    List<List<Object>> wifiResults;
+
     static final int REQUEST_ACCOUNT_PICKER = 1000;
     static final int REQUEST_AUTHORIZATION = 1001;
     static final int REQUEST_GOOGLE_PLAY_SERVICES = 1002;
@@ -61,6 +63,9 @@ public class SheetApi extends Activity implements EasyPermissions.PermissionCall
     private static final String PREF_ACCOUNT_NAME = "accountName";
     private static final String[] SCOPES = { SheetsScopes.SPREADSHEETS };
 
+    public void setWifiResults(List<List<Object>> data) {
+        this.wifiResults = data;
+    }
     /**
      * Create the main activity.
      * @param savedInstanceState previously saved instance data.
@@ -123,7 +128,7 @@ public class SheetApi extends Activity implements EasyPermissions.PermissionCall
      * of the preconditions are not satisfied, the app will prompt the user as
      * appropriate.
      */
-    private void getResultsFromApi() {
+    public void getResultsFromApi() {
         if (! isGooglePlayServicesAvailable()) {
             acquireGooglePlayServices();
         } else if (mCredential.getSelectedAccountName() == null) {
@@ -132,7 +137,7 @@ public class SheetApi extends Activity implements EasyPermissions.PermissionCall
             String setText = "No network connection available.";
             mOutputText.setText(setText);
         } else {
-            new MakeRequestTask(mCredential).execute();
+            new MakeRequestTask(mCredential, this.wifiResults).execute();
         }
     }
 
@@ -322,14 +327,16 @@ public class SheetApi extends Activity implements EasyPermissions.PermissionCall
     private class MakeRequestTask extends AsyncTask<Void, Void, List<String>> {
         private com.google.api.services.sheets.v4.Sheets mService = null;
         private Exception mLastError = null;
+        private List<List<Object>> wifiResults;
 
-        MakeRequestTask(GoogleAccountCredential credential) {
+        MakeRequestTask(GoogleAccountCredential credential,  List<List<Object>> wifiResults) {
             HttpTransport transport = AndroidHttp.newCompatibleTransport();
             JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
             mService = new com.google.api.services.sheets.v4.Sheets.Builder(
                     transport, jsonFactory, credential)
                     .setApplicationName("Google Sheets API Android Quickstart")
                     .build();
+            this.wifiResults = wifiResults;
         }
 
         /**
@@ -407,36 +414,36 @@ public class SheetApi extends Activity implements EasyPermissions.PermissionCall
         }
 
         private void writeDataToSheet(String spreadsheetId, String range) throws IOException {
-            //for the values that you want to input, create a list of object lists
-            List<List<Object>> values = new ArrayList<>();
-
-            //Where each value represents the list of objects that is to be written to a range
-            //I simply want to edit a single row, so I use a single list of objects
-            List<Object> data1 = new ArrayList<>();
-            List<Object> data2 = new ArrayList<>();
-            data1.add("Network");
-            data1.add("SSID");
-            data1.add("BSSID");
-            data1.add("Frequency");
-            data1.add("Level of Intensity");
-            data1.add("Capabilities");
-            data2.add("#2");
-            data2.add("DEUSVULT");
-            data2.add("56:17:31:79:d0:5b");
-            data2.add("2412");
-            data2.add("9");
-            data2.add("[WPA2-PSK-CCMP][EES]");
-
-
-            //There are obviously more dynamic ways to do these, but you get the picture
-            values.add(data1);
-            values.add(data2);
+//            //for the values that you want to input, create a list of object lists
+//            List<List<Object>> values = new ArrayList<>();
+//
+//            //Where each value represents the list of objects that is to be written to a range
+//            //I simply want to edit a single row, so I use a single list of objects
+//            List<Object> data1 = new ArrayList<>();
+//            List<Object> data2 = new ArrayList<>();
+//            data1.add("Network");
+//            data1.add("SSID");
+//            data1.add("BSSID");
+//            data1.add("Frequency");
+//            data1.add("Level of Intensity");
+//            data1.add("Capabilities");
+//            data2.add("#2");
+//            data2.add("DEUSVULT");
+//            data2.add("56:17:31:79:d0:5b");
+//            data2.add("2412");
+//            data2.add("9");
+//            data2.add("[WPA2-PSK-CCMP][EES]");
+//
+//
+//            //There are obviously more dynamic ways to do these, but you get the picture
+//            values.add(data1);
+//            values.add(data2);
 
             //Create the valuerange object and set its fields
             ValueRange valueRange = new ValueRange();
             valueRange.setMajorDimension("ROWS");
             valueRange.setRange(range);
-            valueRange.setValues(values);
+            valueRange.setValues(wifiResults);
 
             //then gloriously execute this copy-pasted code ;)
             this.mService.spreadsheets().values()
