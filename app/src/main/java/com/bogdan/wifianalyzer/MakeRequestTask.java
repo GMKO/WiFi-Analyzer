@@ -1,13 +1,8 @@
 package com.bogdan.wifianalyzer;
 
 import android.os.AsyncTask;
-import android.text.TextUtils;
-import android.util.Log;
-
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
-import com.google.api.client.googleapis.extensions.android.gms.auth.GooglePlayServicesAvailabilityIOException;
-import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
@@ -23,19 +18,13 @@ import com.google.api.services.sheets.v4.model.Spreadsheet;
 import com.google.api.services.sheets.v4.model.UpdateCellsRequest;
 import com.google.api.services.sheets.v4.model.UpdateDimensionPropertiesRequest;
 import com.google.api.services.sheets.v4.model.ValueRange;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by Bogdan on 21-Mar-17.
- */
-
-public class MakeRequestTask extends AsyncTask<Void, Void, List<String>> {
+class MakeRequestTask extends AsyncTask<Void, Void, List<String>> {
     private GoogleAccountCredential mCredential;
     private com.google.api.services.sheets.v4.Sheets mService = null;
-    private Exception mLastError = null;
     private List<List<Object>> wifiResults;
 
     MakeRequestTask(GoogleAccountCredential credential, List<List<Object>> wifiResults) {
@@ -45,6 +34,9 @@ public class MakeRequestTask extends AsyncTask<Void, Void, List<String>> {
                 transport, jsonFactory, credential)
                 .setApplicationName("Google Sheets API Android Quickstart")
                 .build();
+
+        //Set the credentials of the user and the wifiResults.
+        //The wifiResults represents the data that will be sent to the sheet.
         this.wifiResults = wifiResults;
         this.mCredential = credential;
     }
@@ -78,35 +70,11 @@ public class MakeRequestTask extends AsyncTask<Void, Void, List<String>> {
             }
 
             writeDataToSheet(spreadsheetId, range);
-            return getDataFromApi(spreadsheetId, range);
         } catch (Exception e) {
-            mLastError = e;
             cancel(true);
             return null;
         }
-    }
-
-    /**
-     * Fetch a list of names and majors of students in a sample spreadsheet:
-     * https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit
-     * @return List of names and majors
-     * @throws IOException
-     */
-    private List<String> getDataFromApi(String spreadsheetId, String range) throws IOException {
-        List<String> results = new ArrayList<>();
-        ValueRange response = this.mService.spreadsheets().values()
-                .get(spreadsheetId, range)
-                .execute();
-        List<List<Object>> values = response.getValues();
-        if (values != null) {
-            //results.add("Name, Major");
-            Log.d("log",mCredential.getSelectedAccountName());
-            for (List row : values) {
-                //Log.d("log",String.format("Size = %d",row.size()));
-                results.add(row.get(0) + " " + row.get(1));// + " " + row.get(2));
-            }
-        }
-        return results;
+        return null;
     }
 
     private Integer getSheetId(String spreadsheetId, String sheetName) throws IOException {
@@ -255,7 +223,7 @@ public class MakeRequestTask extends AsyncTask<Void, Void, List<String>> {
 
         //Create new dimensionProperties specifying the width of the cells
         DimensionProperties dimensionProperties3 = new DimensionProperties();
-        dimensionProperties3.setPixelSize(250);
+        dimensionProperties3.setPixelSize(400);
 
         //Added the range and the properties to the updateDimensionPropertiesRequest
         updateDimensionPropertiesRequest3.setRange(dimensionRange3);
@@ -302,4 +270,3 @@ public class MakeRequestTask extends AsyncTask<Void, Void, List<String>> {
 
     }
 }
-

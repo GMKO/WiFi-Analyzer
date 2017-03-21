@@ -1,9 +1,7 @@
 package com.bogdan.wifianalyzer;
 
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -11,7 +9,6 @@ import android.Manifest;
 import android.accounts.AccountManager;
 import android.app.Activity;
 import android.app.Dialog;
-import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -24,11 +21,9 @@ import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -41,16 +36,12 @@ import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.util.ExponentialBackOff;
 import com.google.api.services.sheets.v4.SheetsScopes;
-import com.google.api.services.sheets.v4.model.Sheet;
 
 import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.EasyPermissions;
 
 public class Analyzer extends Activity implements EasyPermissions.PermissionCallbacks {
     GoogleAccountCredential mCredential;
-    private TextView mOutputText;
-    private Button mCallApiButton;
-    ProgressDialog mProgress;
 
     List<List<Object>> wifiResults;
 
@@ -59,7 +50,6 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
     static final int REQUEST_GOOGLE_PLAY_SERVICES = 1002;
     static final int REQUEST_PERMISSION_GET_ACCOUNTS = 1003;
 
-    private static final String BUTTON_TEXT = "Call Google Sheets API";
     private static final String PREF_ACCOUNT_NAME = "accountName";
     private static final String[] SCOPES = { SheetsScopes.SPREADSHEETS };
 
@@ -105,7 +95,7 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
             chooseAccount();
         } else if (! isDeviceOnline()) {
             String setText = "No network connection available.";
-            mOutputText.setText(setText);
+            Log.d("ERROR",setText);
         } else {
             new MakeRequestTask(mCredential, this.wifiResults).execute();
         }
@@ -175,7 +165,7 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
                 if (resultCode != RESULT_OK) {
                     String setText = "This app requires Google Play Services. Please install " +
                             "Google Play Services on your device and relaunch this app.";
-                    mOutputText.setText(setText);
+                    Log.d("ERROR",setText);
                 } else {
                     getResultsFromApi();
                 }
@@ -318,7 +308,7 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
         mainWifi = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
 
         // Check if wifi is disabled
-        if (mainWifi.isWifiEnabled() == false)
+        if (!mainWifi.isWifiEnabled())
         {
             // If wifi is disabled then enable it
             Toast.makeText(getApplicationContext(), "Starting WiFi...",
@@ -333,7 +323,9 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
         // Broadcast receiver will automatically call when the number of wifi connections changes
         registerReceiver(receiverWifi, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
         mainWifi.startScan();
-        mainText.setText("Starting Scan...");
+
+        String display = "Starting Scan...";
+        mainText.setText(display);
     }
 
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -343,7 +335,9 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
 
     public boolean onMenuItemSelected(int featureId, MenuItem item) {
         mainWifi.startScan();
-        mainText.setText("Starting Scan");
+
+        String display = "Starting Scan";
+        mainText.setText(display);
         return super.onMenuItemSelected(featureId, item);
     }
 
