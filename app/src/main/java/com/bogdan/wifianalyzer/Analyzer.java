@@ -206,14 +206,6 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
                                            @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
-//
-//        if (requestCode == 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-//            getConnectionList();
-//        }
-//
-//        if (requestCode == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-//            getConnectionList();
-//        }
     }
 
     /**
