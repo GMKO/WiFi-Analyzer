@@ -3,7 +3,6 @@ package com.bogdan.wifianalyzer;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -79,7 +78,7 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
             //After this point you wait for callback in onRequestPermissionsResult(int, String[], int[]) overriden method
             //Ask for location permission (to scan the WiFi)
             if(checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
-                requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 0x12345);
+                requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 0);
 
             //Ask for storage permission (to write to file)
             if(checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
@@ -106,7 +105,7 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
             chooseAccount();
         } else if (! isDeviceOnline()) {
             String setText = "No network connection available.";
-            Log.d("ERROR",setText);
+            mainText.setText(setText);
         } else {
             new MakeRequestTask(mCredential, this.wifiResults).execute();
         }
@@ -166,7 +165,7 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
                 if (resultCode != RESULT_OK) {
                     String setText = "This app requires Google Play Services. Please install " +
                             "Google Play Services on your device and relaunch this app.";
-                    Log.d("ERROR",setText);
+                    mainText.setText(setText);
                 } else {
                     getResultsFromApi();
                 }
@@ -211,9 +210,11 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
         EasyPermissions.onRequestPermissionsResult(
                 requestCode, permissions, grantResults, this);
 
-        if (requestCode == 0x12345
-                && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            // Do something with granted permission
+        if (requestCode == 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            getConnectionList();
+        }
+
+        if (requestCode == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             getConnectionList();
         }
     }
@@ -227,7 +228,7 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
      */
     @Override
     public void onPermissionsGranted(int requestCode, List<String> list) {
-        // Do nothing.
+        Log.d("PERMISSION GRANTED",Integer.valueOf(requestCode).toString());
     }
 
     /**
@@ -239,7 +240,7 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
      */
     @Override
     public void onPermissionsDenied(int requestCode, List<String> list) {
-        // Do nothing.
+        Log.d("PERMISSION DENIED",Integer.valueOf(requestCode).toString());
     }
 
     /**
@@ -352,6 +353,7 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
         super.onResume();
     }
 
+    //Creates the local file and writes the scan result to it
     public void saveResults(String result) throws IOException {
         try {
             String filename = "log.txt";
@@ -369,6 +371,8 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
             String showText = String.format("File saved at %s/%s", path, filename);
             Toast.makeText(getApplicationContext(), showText, Toast.LENGTH_LONG).show();
         } catch (Exception e) {
+            String setText = "Can't write to local file";
+            mainText.setText(setText);
             Log.d("SAVE","EXCEPTION",e);
         }
     }
