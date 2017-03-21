@@ -1,7 +1,9 @@
 package com.bogdan.wifianalyzer;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -71,10 +73,19 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
                 getApplicationContext(), Arrays.asList(SCOPES))
                 .setBackOff(new ExponentialBackOff());
 
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED){
-            requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
-                    0x12345);
+        //Check if the build version is over API23. If it is, then ask the user to give permissions
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+
             //After this point you wait for callback in onRequestPermissionsResult(int, String[], int[]) overriden method
+            //Ask for location permission (to scan the WiFi)
+            if(checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
+                requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 0x12345);
+
+            //Ask for storage permission (to write to file)
+            if(checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
+                requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+
+            getConnectionList();
         }else {
             //Do something, permission was previously granted; or legacy device
             getConnectionList();
@@ -100,16 +111,6 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
             new MakeRequestTask(mCredential, this.wifiResults).execute();
         }
     }
-
-//    @Override
-//    public void onRequestPermissionsResult(int requestCode, String[] permissions,
-//                                           int[] grantResults) {
-//        if (requestCode == 0x12345
-//                && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-//            // Do something with granted permission
-//            getConnectionList();
-//        }
-//    }
 
     /**
      * Attempts to set the account used with the API credentials. If an account
@@ -351,20 +352,42 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
         super.onResume();
     }
 
+    public void saveResults(String result) throws IOException {
+        try {
+            String filename = "log.txt";
+            String path = "/storage/emulated/0/Documents";
+
+            File filePath = new File(path, filename);
+            filePath.createNewFile();
+
+            FileOutputStream fileOutputStream = new FileOutputStream(filePath);
+
+            fileOutputStream.flush();
+            fileOutputStream.write(result.getBytes());
+            fileOutputStream.close();
+
+            String showText = String.format("File saved at %s/%s", path, filename);
+            Toast.makeText(getApplicationContext(), showText, Toast.LENGTH_LONG).show();
+        } catch (Exception e) {
+            Log.d("SAVE","EXCEPTION",e);
+        }
+    }
+
     // Broadcast receiver class calls its receive method when the number of wifi connections changes
 
     class WifiReceiver extends BroadcastReceiver {
 
         // This method is called when the number of wifi connections changes
         public void onReceive(Context c, Intent intent) {
+            Log.d("LOG","Updated connection list");
 
             List<List<Object>> values = new ArrayList<>();
-            Log.d("LOG","Updated connection list");
             sb = new StringBuilder();
             wifiList = mainWifi.getScanResults();
 
             sb.append("\nNumber of WiFi connections :"+wifiList.size()+"\n\n");
 
+            //Set the column heads
             List<Object> data1 = new ArrayList<>();
             data1.add("Network");
             data1.add("SSID");
@@ -376,6 +399,7 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
 
             for(int i = 0; i < wifiList.size(); i++){
 
+                //Add the results to the String Builder that is going to be displayed to the user
                 sb.append("Network #" + Integer.valueOf(i+1).toString());
                 sb.append("\nSSID: " + (wifiList.get(i)).SSID.toString());
                 sb.append("\nBSSID: " + (wifiList.get(i)).BSSID.toString());
@@ -384,6 +408,7 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
                 sb.append("\nCapabilities: " + (wifiList.get(i)).capabilities + "\n");
                 sb.append("\n\n");
 
+                //Add the results to the list that is going to be passed to the Sheets API
                 List<Object> wifiListInfo = new ArrayList<>();
                 wifiListInfo.add(Integer.valueOf(i+1).toString());
                 wifiListInfo.add((wifiList.get(i)).SSID);
@@ -398,6 +423,7 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
             setWifiResults(values);
             getResultsFromApi();
 
+            //Display the scan results to the user
             mainText.setText(sb);
 
             clearButton.setOnClickListener(new View.OnClickListener(){
@@ -411,25 +437,10 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
                     try {
                         saveResults(sb.toString());
                     } catch (Exception e) {
-                        Log.d("EXCEPTION","Something broke: " + e.toString());
+                        Log.d("EXCEPTION","Something broke",e);
                     }
                 }
             });
-        }
-
-        public void saveResults(String result) throws IOException {
-
-            String filename = "logFile";
-            FileOutputStream outputStream;
-
-            outputStream = openFileOutput(filename, Context.MODE_PRIVATE);
-            outputStream.write(result.getBytes());
-            outputStream.close();
-
-            Log.d("LOG",result);
-            String showText = String.format( "File saved at %s/%s",getFilesDir(),filename);
-
-            Toast.makeText(getApplicationContext(), showText, Toast.LENGTH_LONG).show();
         }
     }
 }
