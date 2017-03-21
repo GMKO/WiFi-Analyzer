@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.List;
 import android.Manifest;
 import android.accounts.AccountManager;
@@ -25,7 +24,6 @@ import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.text.format.Time;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.Menu;
@@ -53,9 +51,6 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
     static final int REQUEST_AUTHORIZATION = 1001;
     static final int REQUEST_GOOGLE_PLAY_SERVICES = 1002;
     static final int REQUEST_PERMISSION_GET_ACCOUNTS = 1003;
-    static final int REQUEST_COARSE_LOCATION = 1004;
-    static final int REQUEST_WRITE_EXTERNAL_STORAGE = 1005;
-
 
     private static final String PREF_ACCOUNT_NAME = "accountName";
     private static final String[] SCOPES = { SheetsScopes.SPREADSHEETS };
@@ -83,12 +78,9 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
 
             //After this point you wait for callback in onRequestPermissionsResult(int, String[], int[]) overriden method
             //Ask for location permission (to scan the WiFi)
-            if(checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
-                requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, REQUEST_COARSE_LOCATION);
-
-            //Ask for storage permission (to write to file)
-            if(checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
-                requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_WRITE_EXTERNAL_STORAGE);
+            if((checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
+                || (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED))
+                requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION,Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);
 
             getConnectionList();
         }else {
@@ -214,14 +206,14 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
                                            @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
-
-        if (requestCode == REQUEST_COARSE_LOCATION && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            getConnectionList();
-        }
-
-        if (requestCode == REQUEST_WRITE_EXTERNAL_STORAGE && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            getConnectionList();
-        }
+//
+//        if (requestCode == 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+//            getConnectionList();
+//        }
+//
+//        if (requestCode == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+//            getConnectionList();
+//        }
     }
 
     /**
@@ -368,18 +360,17 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
 
             //Create a file with the specified fileName at the specified path
             File filePath = new File(path, filename);
-            if(filePath.createNewFile()) {
+            filePath.createNewFile();
 
-                //Clear the file of values and write the new ones.
-                FileOutputStream fileOutputStream = new FileOutputStream(filePath);
-                fileOutputStream.flush();
-                fileOutputStream.write(result.getBytes());
-                fileOutputStream.close();
+            //Clear the file of values and write the new ones.
+            FileOutputStream fileOutputStream = new FileOutputStream(filePath);
+            fileOutputStream.flush();
+            fileOutputStream.write(result.getBytes());
+            fileOutputStream.close();
 
-                //Display the path where the file was saved in a Toast
-                String showText = String.format("File saved at %s/%s", path, filename);
-                Toast.makeText(getApplicationContext(), showText, Toast.LENGTH_LONG).show();
-            }
+            //Display the path where the file was saved in a Toast
+            String showText = String.format("File saved at %s/%s", path, filename);
+            Toast.makeText(getApplicationContext(), showText, Toast.LENGTH_LONG).show();
         } catch (Exception e) {
             String setText = "Can't write to local file";
             mainText.setText(setText);
