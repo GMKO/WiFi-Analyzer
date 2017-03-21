@@ -5,6 +5,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.List;
 import android.Manifest;
 import android.accounts.AccountManager;
@@ -23,6 +25,7 @@ import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.text.format.Time;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.Menu;
@@ -377,6 +380,34 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
         }
     }
 
+    public String getTime() {
+        Calendar rightNow = Calendar.getInstance();
+
+        int hour = rightNow.get(Calendar.HOUR_OF_DAY);
+        int minute = rightNow.get(Calendar.MINUTE);
+        int second = rightNow.get(Calendar.SECOND);
+
+        String h;
+        if(hour < 10)
+            h = String.format("0%d:",hour);
+        else
+            h = String.format("%d:",hour);
+
+        String m;
+        if(minute < 10)
+            m = String.format("0%d:",minute);
+        else
+            m = String.format("%d:",minute);
+
+        String s;
+        if(second < 10)
+            s = String.format("0%d",second);
+        else
+            s = String.format("%d",second);
+
+        return h+m+s;
+    }
+
     // Broadcast receiver class calls its receive method when the number of wifi connections changes
 
     class WifiReceiver extends BroadcastReceiver {
@@ -386,10 +417,14 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
             Log.d("LOG","Updated connection list");
 
             List<List<Object>> values = new ArrayList<>();
+            String time = getTime();
             sb = new StringBuilder();
-            wifiList = mainWifi.getScanResults();
 
-            sb.append("\nNumber of WiFi connections :"+wifiList.size()+"\n\n");
+            wifiList = mainWifi.getScanResults();
+            sb.append("\nNumber of WiFi connections :"
+                    + wifiList.size()+"\nScanned at: "
+                    + time
+                    +"\n\n");
 
             //Set the column heads
             List<Object> data1 = new ArrayList<>();
