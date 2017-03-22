@@ -345,7 +345,6 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
     //Creates the local file and writes the scan result to it
     public void saveResults(String result) throws IOException {
         try {
-
             //Set the fileName and the path
             String filename = "log.txt";
             String path = "/storage/emulated/0/Documents";
@@ -407,13 +406,12 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
             Log.d("LOG","Updated connection list");
 
             List<List<Object>> values = new ArrayList<>();
-            String time = getTime();
             sb = new StringBuilder();
 
             wifiList = mainWifi.getScanResults();
             sb.append("\nNumber of WiFi connections :"
                     + wifiList.size()+"\nScanned at: "
-                    + time
+                    + getTime()
                     +"\n\n");
 
             //Set the column heads
@@ -457,7 +455,10 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
 
             clearButton.setOnClickListener(new View.OnClickListener(){
                 public void onClick(View v){
-                    mainText.setText("\nNumber of WiFi connections :"+wifiList.size()+"\n\n");
+                    mainText.setText("\nNumber of WiFi connections :"
+                            + wifiList.size()+"\nScanned at: "
+                            + getTime()
+                            +"\n\n");
                 }
             });
 
