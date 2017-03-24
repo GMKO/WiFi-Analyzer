@@ -168,85 +168,62 @@ class MakeRequestTask extends AsyncTask<Void, Void, List<String>> {
         this.mService.spreadsheets().batchUpdate(spreadsheetId, batchUpdateSpreadsheetRequest).execute();
     }
 
+    private UpdateDimensionPropertiesRequest setColumnFormat(Integer sheetID, Integer start, Integer end, Integer size) {
+
+        //Create a new updateDimensionPropertiesRequest
+        UpdateDimensionPropertiesRequest updateDimensionPropertiesRequest = new UpdateDimensionPropertiesRequest();
+
+        //Create a dimensionRange with the desired attributes
+        DimensionRange dimensionRange = new DimensionRange();
+        dimensionRange.setSheetId(sheetID);
+        dimensionRange.setDimension("COLUMNS");
+        dimensionRange.setStartIndex(start);
+        dimensionRange.setEndIndex(end);
+
+        //Create new dimensionProperties specifying the width of the cells
+        DimensionProperties dimensionProperties = new DimensionProperties();
+        dimensionProperties.setPixelSize(size);
+
+        //Added the range and the properties to the updateDimensionPropertiesRequest
+        updateDimensionPropertiesRequest.setRange(dimensionRange);
+        updateDimensionPropertiesRequest.setProperties(dimensionProperties);
+        updateDimensionPropertiesRequest.setFields("pixelSize");
+
+        return updateDimensionPropertiesRequest;
+    }
+
+    private void addDimensionUpdateRequest(List<Request> requestsList, UpdateDimensionPropertiesRequest updateDimensionPropertiesRequest) {
+        Request request = new Request();
+        request.setUpdateDimensionProperties(updateDimensionPropertiesRequest);
+        requestsList.add(request);
+    }
+
     private void setFormatting(String spreadsheetId, Integer sheetID)  throws IOException {
 
         //Column 0
-        //Create a new updateDimensionPropertiesRequest
-        UpdateDimensionPropertiesRequest updateDimensionPropertiesRequest1 = new UpdateDimensionPropertiesRequest();
-
-        //Create a dimensionRange with the desired attributes
-        DimensionRange dimensionRange1 = new DimensionRange();
-        dimensionRange1.setSheetId(sheetID);
-        dimensionRange1.setDimension("COLUMNS");
-        dimensionRange1.setStartIndex(0);
-        dimensionRange1.setEndIndex(1);
-
-        //Create new dimensionProperties specifying the width of the cells
-        DimensionProperties dimensionProperties1 = new DimensionProperties();
-        dimensionProperties1.setPixelSize(70);
-
-        //Added the range and the properties to the updateDimensionPropertiesRequest
-        updateDimensionPropertiesRequest1.setRange(dimensionRange1);
-        updateDimensionPropertiesRequest1.setProperties(dimensionProperties1);
-        updateDimensionPropertiesRequest1.setFields("pixelSize");
-
-        //Columns 1 to 5
-        //Create a new updateDimensionPropertiesRequest
-        UpdateDimensionPropertiesRequest updateDimensionPropertiesRequest2 = new UpdateDimensionPropertiesRequest();
-
-        //Create a dimensionRange with the desired attributes
-        DimensionRange dimensionRange2 = new DimensionRange();
-        dimensionRange2.setSheetId(sheetID);
-        dimensionRange2.setDimension("COLUMNS");
-        dimensionRange2.setStartIndex(1);
-        dimensionRange2.setEndIndex(5);
-
-        //Create new dimensionProperties specifying the width of the cells
-        DimensionProperties dimensionProperties2 = new DimensionProperties();
-        dimensionProperties2.setPixelSize(200);
-
-        //Added the range and the properties to the updateDimensionPropertiesRequest
-        updateDimensionPropertiesRequest2.setRange(dimensionRange2);
-        updateDimensionPropertiesRequest2.setProperties(dimensionProperties2);
-        updateDimensionPropertiesRequest2.setFields("pixelSize");
-
-        //Column 6
-        //Create a new updateDimensionPropertiesRequest
-        UpdateDimensionPropertiesRequest updateDimensionPropertiesRequest3 = new UpdateDimensionPropertiesRequest();
-
-        //Create a dimensionRange with the desired attributes
-        DimensionRange dimensionRange3 = new DimensionRange();
-        dimensionRange3.setSheetId(sheetID);
-        dimensionRange3.setDimension("COLUMNS");
-        dimensionRange3.setStartIndex(5);
-        dimensionRange3.setEndIndex(6);
-
-        //Create new dimensionProperties specifying the width of the cells
-        DimensionProperties dimensionProperties3 = new DimensionProperties();
-        dimensionProperties3.setPixelSize(400);
-
-        //Added the range and the properties to the updateDimensionPropertiesRequest
-        updateDimensionPropertiesRequest3.setRange(dimensionRange3);
-        updateDimensionPropertiesRequest3.setProperties(dimensionProperties3);
-        updateDimensionPropertiesRequest3.setFields("pixelSize");
+        UpdateDimensionPropertiesRequest updateDimensionPropertiesRequest0 = setColumnFormat(sheetID, 0, 1, 70);
+        //Column 1
+        UpdateDimensionPropertiesRequest updateDimensionPropertiesRequest1 = setColumnFormat(sheetID, 1, 2, 200);
+        //Column 2
+        UpdateDimensionPropertiesRequest updateDimensionPropertiesRequest2 = setColumnFormat(sheetID, 2, 3, 160);
+        //Column 3
+        UpdateDimensionPropertiesRequest updateDimensionPropertiesRequest3 = setColumnFormat(sheetID, 3, 4, 100);
+        //Column 4
+        UpdateDimensionPropertiesRequest updateDimensionPropertiesRequest4 = setColumnFormat(sheetID, 4, 5, 150);
+        //Column 5
+        UpdateDimensionPropertiesRequest updateDimensionPropertiesRequest5 = setColumnFormat(sheetID, 5, 6, 400);
 
         //Create batchUpdateSpreadsheetRequest
         BatchUpdateSpreadsheetRequest batchUpdateSpreadsheetRequest = new BatchUpdateSpreadsheetRequest();
 
-        //Create requestList and set it on the batchUpdateSpreadsheetRequest
-        List<Request> requestsList = new ArrayList<>();
-        batchUpdateSpreadsheetRequest.setRequests(requestsList);
-
         //Create a new request list containing all the updateDimensionPropertiesRequests
-        Request request1 = new Request();
-        request1.setUpdateDimensionProperties(updateDimensionPropertiesRequest1);
-        Request request2 = new Request();
-        request2.setUpdateDimensionProperties(updateDimensionPropertiesRequest2);
-        Request request3 = new Request();
-        request3.setUpdateDimensionProperties(updateDimensionPropertiesRequest3);
-        requestsList.add(request1);
-        requestsList.add(request2);
-        requestsList.add(request3);
+        List<Request> requestsList = new ArrayList<>();
+        addDimensionUpdateRequest(requestsList, updateDimensionPropertiesRequest0);
+        addDimensionUpdateRequest(requestsList, updateDimensionPropertiesRequest1);
+        addDimensionUpdateRequest(requestsList, updateDimensionPropertiesRequest2);
+        addDimensionUpdateRequest(requestsList, updateDimensionPropertiesRequest3);
+        addDimensionUpdateRequest(requestsList, updateDimensionPropertiesRequest4);
+        addDimensionUpdateRequest(requestsList, updateDimensionPropertiesRequest5);
 
         //Add the requestList to the batchUpdateSpreadsheetRequest
         batchUpdateSpreadsheetRequest.setRequests(requestsList);
