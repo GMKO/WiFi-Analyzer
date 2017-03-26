@@ -10,11 +10,11 @@ import java.net.URL;
 
 class RequestHandler extends AsyncTask<Void, String, String> {
 
-    String address, data;
-    Integer mode;
-    StringBuilder response = new StringBuilder();
+    private String address, data;
+    private Integer mode;
+    private StringBuilder response = new StringBuilder();
 
-    public RequestHandler(String address, Integer mode, String data) {
+    RequestHandler(String address, Integer mode, String data) {
         this.address = address;
         this.mode = mode;
         this.data = data;
@@ -32,6 +32,7 @@ class RequestHandler extends AsyncTask<Void, String, String> {
         }
     }
 
+    //Makes a basic GET request at the specified address, for the "data" resource
     private String getRequest(String adr) {
         URL url;
         HttpURLConnection urlConnection = null;

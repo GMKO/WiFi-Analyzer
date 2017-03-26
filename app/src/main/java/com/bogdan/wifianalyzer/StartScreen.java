@@ -17,10 +17,9 @@ import java.util.concurrent.ExecutionException;
 public class StartScreen extends Activity {
 
     EditText serverInput;
-    Button nextButton;
+    Button nextButton, skipButton;
     TextView textView;
-    CheckBox serverToggle;
-    Boolean proceedWithServer = true;
+    Boolean proceedWithServer;
     public static final String SERVER_ADDR = "empty";
 
     public void onCreate(Bundle savedInstanceState) {
@@ -31,12 +30,13 @@ public class StartScreen extends Activity {
         serverInput = (EditText) findViewById(R.id.serverInput);
         nextButton = (Button) findViewById(R.id.nextButton);
         textView = (TextView) findViewById(R.id.textView);
-        serverToggle = (CheckBox) findViewById(R.id.serverToggle);
+        skipButton = (Button) findViewById(R.id.skipButton);
 
         //Makes a connection to a server or proceeds without it, depending on user preference.
         nextButton.setOnClickListener(new View.OnClickListener(){
             public void onClick(View v){
                 try {
+                    proceedWithServer = true;
                     performNextStep(v);
                 } catch (ExecutionException e) {
                     e.printStackTrace();
@@ -47,12 +47,16 @@ public class StartScreen extends Activity {
         });
 
         //This gives the user the option to proceed without a connection to a server
-        serverToggle.setOnClickListener(new View.OnClickListener(){
+        skipButton.setOnClickListener(new View.OnClickListener(){
             public void onClick(View v){
-                if(serverToggle.isChecked())
-                    proceedWithServer = true;
-                else
+                try {
                     proceedWithServer = false;
+                    performNextStep(v);
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         });
     }
