@@ -55,7 +55,7 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
     private static final String PREF_ACCOUNT_NAME = "accountName";
     private static final String[] SCOPES = { SheetsScopes.SPREADSHEETS };
 
-    Button clearButton, saveButton;
+    Button clearButton, saveButton, scanButton;
     TextView mainText;
     WifiManager mainWifi;
     WifiReceiver receiverWifi;
@@ -294,6 +294,7 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
 
         clearButton = (Button) findViewById(R.id.clearButton);
         saveButton = (Button) findViewById(R.id.saveButton);
+        scanButton = (Button) findViewById(R.id.scanButton);
 
         // Initiate wifi service manager
         mainWifi = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
@@ -469,6 +470,12 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
                     } catch (Exception e) {
                         Log.d("EXCEPTION","Something broke",e);
                     }
+                }
+            });
+
+            scanButton.setOnClickListener(new View.OnClickListener(){
+                public void onClick(View v){
+                    mainWifi.startScan();
                 }
             });
         }

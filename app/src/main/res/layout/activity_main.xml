@@ -18,7 +18,15 @@
         android:layout_height="wrap_content"
         android:layout_alignStart="@+id/clearButton"
         android:layout_below="@+id/clearButton"
-        android:text="Save List" />
+        android:text="Save" />
+
+    <Button
+        android:id="@+id/scanButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_below="@+id/saveButton"
+        android:text="Scan" />
 
     <TextView
         android:id="@+id/mainText"
