@@ -61,6 +61,7 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
     WifiReceiver receiverWifi;
     List<ScanResult> wifiList;
     StringBuilder sb = new StringBuilder();
+    String serverAddress;
 
     public void setWifiResults(List<List<Object>> data) {
         this.wifiResults = data;
@@ -71,9 +72,10 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
 
         setContentView(R.layout.activity_main);
 
+        //Get the server address
         Intent intent = getIntent();
-        String message = intent.getStringExtra(StartScreen.SERVER_ADDR);
-        Log.d("RECEIVED: ", message);
+        serverAddress = intent.getStringExtra(StartScreen.SERVER_ADDR);
+        Log.d("RECEIVED: ", serverAddress);
 
         mCredential = GoogleAccountCredential.usingOAuth2(
                 getApplicationContext(), Arrays.asList(SCOPES))

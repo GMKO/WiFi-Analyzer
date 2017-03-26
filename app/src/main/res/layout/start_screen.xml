@@ -20,9 +20,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Next"
-        android:layout_alignTop="@+id/serverInput"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="56dp" />
+        android:layout_marginTop="17dp"
+        android:layout_below="@+id/serverInput"
+        android:layout_alignStart="@+id/serverInput" />
 
     <EditText
         android:id="@+id/serverInput"
@@ -34,5 +34,25 @@
         android:layout_below="@+id/textView"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="28dp" />
+
+    <CheckBox
+        android:id="@+id/serverToggle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:checked="true"
+        android:text="Server"
+        android:layout_alignBaseline="@+id/nextButton"
+        android:layout_alignBottom="@+id/nextButton"
+        android:layout_alignEnd="@+id/serverInput" />
+
+    <TextView
+        android:id="@+id/infoText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignEnd="@+id/serverToggle"
+        android:layout_alignStart="@+id/nextButton"
+        android:layout_below="@+id/nextButton"
+        android:layout_marginTop="44dp"
+        android:text="Check the server box and input a valid address if you wish to proceed with a server connection. Uncheck otherwise." />
 
 </RelativeLayout>

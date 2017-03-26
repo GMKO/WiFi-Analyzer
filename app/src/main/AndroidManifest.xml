@@ -17,7 +17,8 @@
         android:theme="@style/AppTheme" >
         <activity
             android:name="com.bogdan.wifianalyzer.StartScreen"
-            android:label="WiFi Analyzer" >
+            android:label="WiFi Analyzer"
+            android:noHistory="true" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
