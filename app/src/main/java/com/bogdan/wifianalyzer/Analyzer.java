@@ -454,16 +454,20 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
                 wifiListInfo.add(wifiList.get(i).capabilities);
                 values.add(wifiListInfo);
 
-                //Add the results to the String Builder that is going to be sent to the server.
-                StringBuilder serverData = new StringBuilder();
-                serverData.append(Integer.valueOf(i+1).toString() + "\n");
-                serverData.append(wifiList.get(i).SSID + "\n");
-                serverData.append(wifiList.get(i).BSSID + "\n");
-                serverData.append(wifiList.get(i).frequency + "\n");
-                serverData.append(mainWifi.calculateSignalLevel((wifiList.get(i)).level,10) + "\n");
-                serverData.append(wifiList.get(i).capabilities);
+                //If the user chose to use a server to store data, then the data is also sent to the server.
+                if(serverAddress != "FALSE") {
+                    //Add the results to the String Builder that is going to be sent to the server.
+                    StringBuilder serverData = new StringBuilder();
+                    serverData.append(Integer.valueOf(i + 1).toString() + "\n");
+                    serverData.append(wifiList.get(i).SSID + "\n");
+                    serverData.append(wifiList.get(i).BSSID + "\n");
+                    serverData.append(wifiList.get(i).frequency + "\n");
+                    serverData.append(mainWifi.calculateSignalLevel((wifiList.get(i)).level, 10) + "\n");
+                    serverData.append(wifiList.get(i).capabilities);
 
-                new RequestHandler(serverAddress, 1, serverData.toString()).execute();
+                    //Send the first scan result to the server.
+                    new RequestHandler(serverAddress, 1, serverData.toString()).execute();
+                }
             }
 
             //Send the retrieved results to the Google Spreadsheet

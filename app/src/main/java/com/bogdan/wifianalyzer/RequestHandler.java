@@ -60,11 +60,11 @@ class RequestHandler extends AsyncTask<Void, String, String> {
     }
 
     //Makes a basic GET request at the specified address, for the "data" resource
-    private String getRequest(String adr) {
+    private String getRequest(String addr) {
         URL url;
         HttpURLConnection urlConnection = null;
         try {
-            url = new URL(adr);
+            url = new URL(addr);
             urlConnection = (HttpURLConnection) url.openConnection();
             InputStream in = urlConnection.getInputStream();
             InputStreamReader isw = new InputStreamReader(in);
@@ -87,8 +87,8 @@ class RequestHandler extends AsyncTask<Void, String, String> {
     }
 
     //Makes a post request at the address, with the JSON object.
-    private String postRequest(String adr, JSONObject scan) {
-
+    private String postRequest(String addr, JSONObject scan) {
+        //TODO: Complete the POST request.
         return null;
     }
 }

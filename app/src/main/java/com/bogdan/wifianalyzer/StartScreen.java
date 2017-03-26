@@ -78,22 +78,22 @@ public class StartScreen extends Activity {
     public void performNextStep(View view) throws ExecutionException, InterruptedException {
                     //Server override//
         ///////////////////////////////////////////////
-        String addr = serverInput.getText().toString();
-        //String addr = "http://eb9b71c8.ngrok.io";
+        //String addr = serverInput.getText().toString();
+        String addr = "http://eb9b71c8.ngrok.io";
         ///////////////////////////////////////////////
 
         //Check if the user wants to proceed with a connection to a server.
         //Unless the user provides a valid server (gets a respons back), the user will not be able to proceed
         //Otherwise, a connection will be established and the next activity will be started
-        if(proceedWithServer == true) {
+        if(proceedWithServer) {
             String status = new RequestHandler(addr, 0, "/greeting").execute().get();
             if (status.isEmpty()) {
                 //Display a message when failing to connect to a server in a Toast
-                String showText = String.format("Can't establish a connection to the server.");
+                String showText = "Can't establish a connection to the server.";
                 Toast.makeText(getApplicationContext(), showText, Toast.LENGTH_LONG).show();
             } else {
                 //Display a message when connected to a server in a Toast
-                String showText = String.format("Connected!");
+                String showText = "Connected!";
                 Toast.makeText(getApplicationContext(), showText, Toast.LENGTH_LONG).show();
 
                 //Proceed with the next activity.
@@ -106,7 +106,8 @@ public class StartScreen extends Activity {
         //as a parameter to the next activity, meaning that the scan results won't be sent to a server.
         else
         {
-            addr = "FALSE";
+            //Uncomment this, used to bypass manual server input
+            //addr = "FALSE";
             Intent intent = new Intent(this, Analyzer.class);
             intent.putExtra(SERVER_ADDR, addr);
             startActivity(intent);
