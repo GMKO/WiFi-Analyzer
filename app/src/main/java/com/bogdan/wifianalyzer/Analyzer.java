@@ -75,7 +75,7 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
         //Get the server address
         Intent intent = getIntent();
         serverAddress = intent.getStringExtra(StartScreen.SERVER_ADDR);
-        Log.d("RECEIVED: ", serverAddress);
+        //Log.d("RECEIVED: ", serverAddress);
 
         mCredential = GoogleAccountCredential.usingOAuth2(
                 getApplicationContext(), Arrays.asList(SCOPES))
@@ -435,24 +435,35 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
 
             for(int i = 0; i < wifiList.size(); i++){
 
-                //Add the results to the String Builder that is going to be displayed to the user
+                //Add the results to the String Builder that is going to be displayed to the user.
                 sb.append("Network #" + Integer.valueOf(i+1).toString());
-                sb.append("\nSSID: " + (wifiList.get(i)).SSID.toString());
-                sb.append("\nBSSID: " + (wifiList.get(i)).BSSID.toString());
-                sb.append("\nFrequency: " + (wifiList.get(i)).frequency);
+                sb.append("\nSSID: " + wifiList.get(i).SSID);
+                sb.append("\nBSSID: " + wifiList.get(i).BSSID);
+                sb.append("\nFrequency: " + wifiList.get(i).frequency);
                 sb.append("\nLevel of intensity: " + mainWifi.calculateSignalLevel((wifiList.get(i)).level,10));
-                sb.append("\nCapabilities: " + (wifiList.get(i)).capabilities + "\n");
+                sb.append("\nCapabilities: " + wifiList.get(i).capabilities + "\n");
                 sb.append("\n\n");
 
-                //Add the results to the list that is going to be passed to the Sheets API
+                //Add the results to the list that is going to be passed to the Sheets API.
                 List<Object> wifiListInfo = new ArrayList<>();
                 wifiListInfo.add(Integer.valueOf(i+1).toString());
                 wifiListInfo.add((wifiList.get(i)).SSID);
                 wifiListInfo.add((wifiList.get(i)).BSSID);
                 wifiListInfo.add(Integer.valueOf((wifiList.get(i)).frequency).toString());
                 wifiListInfo.add(Integer.valueOf(mainWifi.calculateSignalLevel((wifiList.get(i)).level,10)).toString());
-                wifiListInfo.add((wifiList.get(i)).capabilities);
+                wifiListInfo.add(wifiList.get(i).capabilities);
                 values.add(wifiListInfo);
+
+                //Add the results to the String Builder that is going to be sent to the server.
+                StringBuilder serverData = new StringBuilder();
+                serverData.append(Integer.valueOf(i+1).toString() + "\n");
+                serverData.append(wifiList.get(i).SSID + "\n");
+                serverData.append(wifiList.get(i).BSSID + "\n");
+                serverData.append(wifiList.get(i).frequency + "\n");
+                serverData.append(mainWifi.calculateSignalLevel((wifiList.get(i)).level,10) + "\n");
+                serverData.append(wifiList.get(i).capabilities);
+
+                new RequestHandler(serverAddress, 1, serverData.toString()).execute();
             }
 
             //Send the retrieved results to the Google Spreadsheet

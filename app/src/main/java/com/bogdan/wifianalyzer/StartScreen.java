@@ -76,14 +76,17 @@ public class StartScreen extends Activity {
 
     //Method to call the next activity and pass it the input from the EditText
     public void performNextStep(View view) throws ExecutionException, InterruptedException {
+                    //Server override//
+        ///////////////////////////////////////////////
         String addr = serverInput.getText().toString();
         //String addr = "http://eb9b71c8.ngrok.io";
-        String status = new RequestHandler(addr, 0, "/greeting").execute().get();
+        ///////////////////////////////////////////////
 
         //Check if the user wants to proceed with a connection to a server.
         //Unless the user provides a valid server (gets a respons back), the user will not be able to proceed
         //Otherwise, a connection will be established and the next activity will be started
         if(proceedWithServer == true) {
+            String status = new RequestHandler(addr, 0, "/greeting").execute().get();
             if (status.isEmpty()) {
                 //Display a message when failing to connect to a server in a Toast
                 String showText = String.format("Can't establish a connection to the server.");

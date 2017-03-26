@@ -3,6 +3,9 @@ package com.bogdan.wifianalyzer;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -22,14 +25,38 @@ class RequestHandler extends AsyncTask<Void, String, String> {
 
     @Override
     public String doInBackground(Void... params) {
-
         if(mode == 0) {
-            String result = getRequest(address + data);
-            return result;
+            return getRequest(address + data);
         }
         else {
-            return null;
+            JSONObject jsonData = parseData(data);
+            return postRequest(address, jsonData);
         }
+    }
+
+    @Override
+    protected void onPostExecute(String result) {
+        super.onPostExecute(result);
+    }
+
+    //Takes the input data from the scan and converts it to a JSON object.
+    private JSONObject parseData(String scanData) {
+        String[] splitScanData = scanData.split("\n");
+        JSONObject scanJson = new JSONObject();
+
+        try {
+            scanJson.put("Network", splitScanData[0]);
+            scanJson.put("SSID", splitScanData[1]);
+            scanJson.put("BSSID", splitScanData[2]);
+            scanJson.put("Frequency", splitScanData[3]);
+            scanJson.put("Intensity", splitScanData[4]);
+            scanJson.put("Capabilities", splitScanData[5]);
+        } catch (JSONException e) {
+            Log.d("REQ", "unexpected JSON exception", e);
+        }
+
+        //Log.d("JSON", scanJson.toString());
+        return scanJson;
     }
 
     //Makes a basic GET request at the specified address, for the "data" resource
@@ -59,8 +86,9 @@ class RequestHandler extends AsyncTask<Void, String, String> {
         return response.toString();
     }
 
-    @Override
-    protected void onPostExecute(String result) {
-        super.onPostExecute(result);
+    //Makes a post request at the address, with the JSON object.
+    private String postRequest(String adr, JSONObject scan) {
+
+        return null;
     }
 }
