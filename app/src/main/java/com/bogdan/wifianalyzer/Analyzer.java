@@ -69,6 +69,12 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        setContentView(R.layout.activity_main);
+
+        Intent intent = getIntent();
+        String message = intent.getStringExtra(StartScreen.SERVER_ADDR);
+        Log.d("RECEIVED: ", message);
+
         mCredential = GoogleAccountCredential.usingOAuth2(
                 getApplicationContext(), Arrays.asList(SCOPES))
                 .setBackOff(new ExponentialBackOff());
@@ -457,7 +463,7 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
             clearButton.setOnClickListener(new View.OnClickListener(){
                 public void onClick(View v){
                     mainText.setText("\nNumber of WiFi connections :"
-                            + wifiList.size()+"\nScanned at: "
+                            + wifiList.size()+"\nCleared at: "
                             + getTime()
                             +"\n\n");
                 }
