@@ -45,12 +45,13 @@ class RequestHandler extends AsyncTask<Void, String, String> {
         JSONObject scanJson = new JSONObject();
 
         try {
-            scanJson.put("Network", splitScanData[0]);
-            scanJson.put("SSID", splitScanData[1]);
-            scanJson.put("BSSID", splitScanData[2]);
-            scanJson.put("Frequency", splitScanData[3]);
-            scanJson.put("Intensity", splitScanData[4]);
-            scanJson.put("Capabilities", splitScanData[5]);
+            scanJson.put("User",splitScanData[0]);
+            scanJson.put("Network", splitScanData[1]);
+            scanJson.put("SSID", splitScanData[2]);
+            scanJson.put("BSSID", splitScanData[3]);
+            scanJson.put("Frequency", splitScanData[4]);
+            scanJson.put("Intensity", splitScanData[5]);
+            scanJson.put("Capabilities", splitScanData[6]);
         } catch (JSONException e) {
             Log.d("REQ", "unexpected JSON exception", e);
         }
@@ -89,6 +90,7 @@ class RequestHandler extends AsyncTask<Void, String, String> {
     //Makes a post request at the address, with the JSON object.
     private String postRequest(String addr, JSONObject scan) {
         //TODO: Complete the POST request.
+        Log.d("JSON",scan.toString());
         return null;
     }
 }

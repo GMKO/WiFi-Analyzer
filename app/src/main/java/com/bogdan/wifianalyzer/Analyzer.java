@@ -75,7 +75,11 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
         //Get the server address
         Intent intent = getIntent();
         serverAddress = intent.getStringExtra(StartScreen.SERVER_ADDR);
-        //Log.d("RECEIVED: ", serverAddress);
+
+        if(serverAddress.equals("FALSE")) {
+            Toast.makeText(getApplicationContext(), "No connection to server.",
+                    Toast.LENGTH_SHORT).show();
+        };
 
         mCredential = GoogleAccountCredential.usingOAuth2(
                 getApplicationContext(), Arrays.asList(SCOPES))
@@ -97,6 +101,17 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
         }
     }
 
+    public void acquireServices() {
+        if (! isGooglePlayServicesAvailable()) {
+            acquireGooglePlayServices();
+        } else if (mCredential.getSelectedAccountName() == null) {
+            chooseAccount();
+        } else if (! isDeviceOnline()) {
+            String setText = "No network connection available.";
+            mainText.setText(setText);
+        }
+    }
+
     /**
      * Attempt to call the API, after verifying that all the preconditions are
      * satisfied. The preconditions are: Google Play Services installed, an
@@ -105,17 +120,19 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
      * appropriate.
      */
     public void getResultsFromApi() {
-        if (! isGooglePlayServicesAvailable()) {
-            acquireGooglePlayServices();
-        } else if (mCredential.getSelectedAccountName() == null) {
-            chooseAccount();
-        } else if (! isDeviceOnline()) {
-            String setText = "No network connection available.";
-            mainText.setText(setText);
-        } else {
-            new MakeRequestTask(mCredential, this.wifiResults).execute();
-        }
+//        if (! isGooglePlayServicesAvailable()) {
+//            acquireGooglePlayServices();
+//        } else if (mCredential.getSelectedAccountName() == null) {
+//            chooseAccount();
+//        } else if (! isDeviceOnline()) {
+//            String setText = "No network connection available.";
+//            mainText.setText(setText);
+//        } else {
+//            new MakeRequestTask(mCredential, this.wifiResults).execute();
+//        }
+        new MakeRequestTask(mCredential, this.wifiResults).execute();
     }
+
 
     /**
      * Attempts to set the account used with the API credentials. If an account
@@ -412,6 +429,7 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
 
         // This method is called when the number of wifi connections changes
         public void onReceive(Context c, Intent intent) {
+            acquireServices();
             Log.d("LOG","Updated connection list");
 
             List<List<Object>> values = new ArrayList<>();
@@ -458,6 +476,7 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
                 if(serverAddress != "FALSE") {
                     //Add the results to the String Builder that is going to be sent to the server.
                     StringBuilder serverData = new StringBuilder();
+                    serverData.append(mCredential.getSelectedAccountName() + "\n");
                     serverData.append(Integer.valueOf(i + 1).toString() + "\n");
                     serverData.append(wifiList.get(i).SSID + "\n");
                     serverData.append(wifiList.get(i).BSSID + "\n");

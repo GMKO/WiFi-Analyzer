@@ -79,7 +79,7 @@ public class StartScreen extends Activity {
                     //Server override//
         ///////////////////////////////////////////////
         //String addr = serverInput.getText().toString();
-        String addr = "http://eb9b71c8.ngrok.io";
+        String addr = "http://5bba6f58.ngrok.io";
         ///////////////////////////////////////////////
 
         //Check if the user wants to proceed with a connection to a server.
@@ -89,12 +89,12 @@ public class StartScreen extends Activity {
             String status = new RequestHandler(addr, 0, "/greeting").execute().get();
             if (status.isEmpty()) {
                 //Display a message when failing to connect to a server in a Toast
-                String showText = "Can't establish a connection to the server.";
-                Toast.makeText(getApplicationContext(), showText, Toast.LENGTH_LONG).show();
+                String showText = "Can't establish a connection to server.";
+                Toast.makeText(getApplicationContext(), showText, Toast.LENGTH_SHORT).show();
             } else {
                 //Display a message when connected to a server in a Toast
-                String showText = "Connected!";
-                Toast.makeText(getApplicationContext(), showText, Toast.LENGTH_LONG).show();
+                String showText = "Connected to server.";
+                Toast.makeText(getApplicationContext(), showText, Toast.LENGTH_SHORT).show();
 
                 //Proceed with the next activity.
                 Intent intent = new Intent(this, Analyzer.class);
