@@ -6,8 +6,11 @@ import android.util.Log;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
@@ -30,8 +33,13 @@ class RequestHandler extends AsyncTask<Void, String, String> {
         }
         else {
             JSONObject jsonData = parseData(data);
-            return postRequest(address, jsonData);
+            try {
+                return postRequest(address, jsonData);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
+        return null;
     }
 
     @Override
@@ -88,9 +96,38 @@ class RequestHandler extends AsyncTask<Void, String, String> {
     }
 
     //Makes a post request at the address, with the JSON object.
-    private String postRequest(String addr, JSONObject scan) {
-        //TODO: Complete the POST request.
-        Log.d("JSON",scan.toString());
+    private String postRequest(String addr, JSONObject scan) throws IOException {
+        URL object=new URL(addr + "/scan");
+
+        HttpURLConnection con = (HttpURLConnection) object.openConnection();
+        con.setDoOutput(true);
+        con.setDoInput(true);
+        con.setRequestProperty("Content-Type", "application/json");
+        con.setRequestProperty("Accept", "application/json");
+        //con.setRequestProperty("json",scan.toString());
+        con.setRequestMethod("POST");
+
+        OutputStreamWriter wr = new OutputStreamWriter(con.getOutputStream());
+        wr.write(scan.toString());
+        wr.flush();
+
+
+        ///////////////////////////
+        StringBuilder sb = new StringBuilder();
+        int HttpResult = con.getResponseCode();
+        if (HttpResult == HttpURLConnection.HTTP_OK) {
+            BufferedReader br = new BufferedReader(
+                    new InputStreamReader(con.getInputStream(), "utf-8"));
+            String line = null;
+            while ((line = br.readLine()) != null) {
+                sb.append(line + "\n");
+            }
+            br.close();
+            Log.d("GOOD: ", sb.toString());
+        } else {
+            Log.d("BAD: ", con.getResponseMessage());
+        }
+        ///////////////////////////
         return null;
     }
 }
