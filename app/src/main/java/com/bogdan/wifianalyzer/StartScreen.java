@@ -86,7 +86,7 @@ public class StartScreen extends Activity {
         //Unless the user provides a valid server (gets a respons back), the user will not be able to proceed
         //Otherwise, a connection will be established and the next activity will be started
         if(proceedWithServer) {
-            String status = new RequestHandler(addr, 0, "/greeting").execute().get();
+            String status = new RequestHandler(addr, "/greeting", "name", 0, 0).execute().get();
             if (status.isEmpty()) {
                 //Display a message when failing to connect to a server in a Toast
                 String showText = "Can't establish a connection to server.";

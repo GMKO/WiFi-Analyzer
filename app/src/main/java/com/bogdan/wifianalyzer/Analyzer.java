@@ -60,7 +60,6 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
     WifiManager mainWifi;
     WifiReceiver receiverWifi;
     List<ScanResult> wifiList;
-    StringBuilder sb = new StringBuilder();
     String serverAddress;
 
     public void setWifiResults(List<List<Object>> data) {
@@ -432,8 +431,11 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
             acquireServices();
             Log.d("LOG","Updated connection list");
 
+            StringBuilder serverData = new StringBuilder();
+            final StringBuilder sb = new StringBuilder();
             List<List<Object>> values = new ArrayList<>();
-            sb = new StringBuilder();
+
+            //sb = new StringBuilder();
 
             wifiList = mainWifi.getScanResults();
             sb.append("\nNumber of WiFi connections :"
@@ -475,18 +477,19 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
                 //If the user chose to use a server to store data, then the data is also sent to the server.
                 if(serverAddress != "FALSE") {
                     //Add the results to the String Builder that is going to be sent to the server.
-                    StringBuilder serverData = new StringBuilder();
-                    serverData.append(mCredential.getSelectedAccountName() + "\n");
                     serverData.append(Integer.valueOf(i + 1).toString() + "\n");
                     serverData.append(wifiList.get(i).SSID + "\n");
                     serverData.append(wifiList.get(i).BSSID + "\n");
                     serverData.append(wifiList.get(i).frequency + "\n");
                     serverData.append(mainWifi.calculateSignalLevel((wifiList.get(i)).level, 10) + "\n");
-                    serverData.append(wifiList.get(i).capabilities);
-
-                    //Send the first scan result to the server.
-                    new RequestHandler(serverAddress, 1, serverData.toString()).execute();
+                    serverData.append(wifiList.get(i).capabilities + "\n");
                 }
+            }
+
+            //If the user chose to use a server to store data, then the data is also sent to the server.
+            if(serverAddress != "FALSE") {
+                //Send the scan result to the server.
+                new RequestHandler(serverAddress, serverData.toString(), mCredential.getSelectedAccountName(), wifiList.size(), 1).execute();
             }
 
             //Send the retrieved results to the Google Spreadsheet

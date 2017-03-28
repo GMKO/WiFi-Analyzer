@@ -3,6 +3,7 @@ package com.bogdan.wifianalyzer;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -16,14 +17,16 @@ import java.net.URL;
 
 class RequestHandler extends AsyncTask<Void, String, String> {
 
-    private String address, data;
-    private Integer mode;
+    private String address, data, name;
+    private Integer mode, size;
     private StringBuilder response = new StringBuilder();
 
-    RequestHandler(String address, Integer mode, String data) {
+    RequestHandler(String address, String data, String name, Integer size, Integer mode) {
         this.address = address;
         this.mode = mode;
         this.data = data;
+        this.name = name;
+        this.size = size;
     }
 
     @Override
@@ -32,7 +35,7 @@ class RequestHandler extends AsyncTask<Void, String, String> {
             return getRequest(address + data);
         }
         else {
-            JSONObject jsonData = parseData(data);
+            JSONObject jsonData = parseData(size, name, data);
             try {
                 return postRequest(address, jsonData);
             } catch (IOException e) {
@@ -48,18 +51,29 @@ class RequestHandler extends AsyncTask<Void, String, String> {
     }
 
     //Takes the input data from the scan and converts it to a JSON object.
-    private JSONObject parseData(String scanData) {
+    private JSONObject parseData(Integer size, String name, String scanData) {
         String[] splitScanData = scanData.split("\n");
         JSONObject scanJson = new JSONObject();
 
         try {
-            scanJson.put("User",splitScanData[0]);
-            scanJson.put("Network", splitScanData[1]);
-            scanJson.put("SSID", splitScanData[2]);
-            scanJson.put("BSSID", splitScanData[3]);
-            scanJson.put("Frequency", splitScanData[4]);
-            scanJson.put("Intensity", splitScanData[5]);
-            scanJson.put("Capabilities", splitScanData[6]);
+            JSONArray dataArrayJson = new JSONArray();
+            scanJson.put("name", name);
+
+            for(Integer i=0; i<size*6; i+=6) {
+
+                JSONObject dataJson = new JSONObject();
+
+                dataJson.put("Network", splitScanData[i]);
+                dataJson.put("SSID", splitScanData[i+1]);
+                dataJson.put("BSSID", splitScanData[i+2]);
+                dataJson.put("Frequency", splitScanData[i+3]);
+                dataJson.put("Intensity", splitScanData[i+4]);
+                dataJson.put("Capabilities", splitScanData[i+5]);
+
+                dataArrayJson.put(dataJson);
+            }
+
+            scanJson.put("data",dataArrayJson);
         } catch (JSONException e) {
             Log.d("REQ", "unexpected JSON exception", e);
         }
@@ -97,37 +111,26 @@ class RequestHandler extends AsyncTask<Void, String, String> {
 
     //Makes a post request at the address, with the JSON object.
     private String postRequest(String addr, JSONObject scan) throws IOException {
-        URL object=new URL(addr + "/scan");
+        URL url = new URL(addr + "/scan");
 
-        HttpURLConnection con = (HttpURLConnection) object.openConnection();
+        //Open the connection to the specified URL.
+        HttpURLConnection con = (HttpURLConnection) url.openConnection();
+
+        //Set the connection properties.
         con.setDoOutput(true);
         con.setDoInput(true);
-        con.setRequestProperty("Content-Type", "application/json");
+
+        //Set the request headers.
+        con.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
         con.setRequestProperty("Accept", "application/json");
-        //con.setRequestProperty("json",scan.toString());
         con.setRequestMethod("POST");
 
+        //Send the data.
         OutputStreamWriter wr = new OutputStreamWriter(con.getOutputStream());
         wr.write(scan.toString());
         wr.flush();
 
-
-        ///////////////////////////
-        StringBuilder sb = new StringBuilder();
-        int HttpResult = con.getResponseCode();
-        if (HttpResult == HttpURLConnection.HTTP_OK) {
-            BufferedReader br = new BufferedReader(
-                    new InputStreamReader(con.getInputStream(), "utf-8"));
-            String line = null;
-            while ((line = br.readLine()) != null) {
-                sb.append(line + "\n");
-            }
-            br.close();
-            Log.d("GOOD: ", sb.toString());
-        } else {
-            Log.d("BAD: ", con.getResponseMessage());
-        }
-        ///////////////////////////
-        return null;
+        //Return the response code.
+        return String.format("%d", con.getResponseCode());
     }
 }
