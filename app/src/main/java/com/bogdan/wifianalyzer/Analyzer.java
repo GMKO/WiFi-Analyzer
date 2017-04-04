@@ -61,6 +61,7 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
     WifiReceiver receiverWifi;
     List<ScanResult> wifiList;
     String serverAddress;
+    String enableSheets;
 
     public void setWifiResults(List<List<Object>> data) {
         this.wifiResults = data;
@@ -73,12 +74,19 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
 
         //Get the server address
         Intent intent = getIntent();
-        serverAddress = intent.getStringExtra(StartScreen.SERVER_ADDR);
+        Bundle extras = intent.getExtras();
+        serverAddress = extras.getString("SERVER_ADDR");
+        enableSheets = extras.getString("ENABLE_SHEETS");
 
         if(serverAddress.equals("FALSE")) {
             Toast.makeText(getApplicationContext(), "No connection to server.",
                     Toast.LENGTH_SHORT).show();
-        };
+        }
+
+        if(enableSheets.equals("FALSE")) {
+            Toast.makeText(getApplicationContext(), "Results won't be sent to a Google Spreadsheet.",
+                    Toast.LENGTH_SHORT).show();
+        }
 
         mCredential = GoogleAccountCredential.usingOAuth2(
                 getApplicationContext(), Arrays.asList(SCOPES))
@@ -100,6 +108,13 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
         }
     }
 
+    /**
+     * Attempt to call the API, after verifying that all the preconditions are
+     * satisfied. The preconditions are: Google Play Services installed, an
+     * account was selected and the device currently has online access. If any
+     * of the preconditions are not satisfied, the app will prompt the user as
+     * appropriate.
+     */
     public void acquireServices() {
         if (! isGooglePlayServicesAvailable()) {
             acquireGooglePlayServices();
@@ -111,24 +126,7 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
         }
     }
 
-    /**
-     * Attempt to call the API, after verifying that all the preconditions are
-     * satisfied. The preconditions are: Google Play Services installed, an
-     * account was selected and the device currently has online access. If any
-     * of the preconditions are not satisfied, the app will prompt the user as
-     * appropriate.
-     */
     public void getResultsFromApi() {
-//        if (! isGooglePlayServicesAvailable()) {
-//            acquireGooglePlayServices();
-//        } else if (mCredential.getSelectedAccountName() == null) {
-//            chooseAccount();
-//        } else if (! isDeviceOnline()) {
-//            String setText = "No network connection available.";
-//            mainText.setText(setText);
-//        } else {
-//            new MakeRequestTask(mCredential, this.wifiResults).execute();
-//        }
         new MakeRequestTask(mCredential, this.wifiResults).execute();
     }
 
@@ -151,7 +149,7 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
                     .getString(PREF_ACCOUNT_NAME, null);
             if (accountName != null) {
                 mCredential.setSelectedAccountName(accountName);
-                getResultsFromApi();
+                //getResultsFromApi();
             } else {
                 // Start a dialog from which the user can choose an account
                 startActivityForResult(
@@ -189,7 +187,7 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
                             "Google Play Services on your device and relaunch this app.";
                     mainText.setText(setText);
                 } else {
-                    getResultsFromApi();
+                    //getResultsFromApi();
                 }
                 break;
             case REQUEST_ACCOUNT_PICKER:
@@ -204,13 +202,13 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
                         editor.putString(PREF_ACCOUNT_NAME, accountName);
                         editor.apply();
                         mCredential.setSelectedAccountName(accountName);
-                        getResultsFromApi();
+                        //getResultsFromApi();
                     }
                 }
                 break;
             case REQUEST_AUTHORIZATION:
                 if (resultCode == RESULT_OK) {
-                    getResultsFromApi();
+                    //getResultsFromApi();
                 }
                 break;
         }
@@ -464,18 +462,20 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
                 sb.append("\nCapabilities: " + wifiList.get(i).capabilities + "\n");
                 sb.append("\n\n");
 
-                //Add the results to the list that is going to be passed to the Sheets API.
-                List<Object> wifiListInfo = new ArrayList<>();
-                wifiListInfo.add(Integer.valueOf(i+1).toString());
-                wifiListInfo.add((wifiList.get(i)).SSID);
-                wifiListInfo.add((wifiList.get(i)).BSSID);
-                wifiListInfo.add(Integer.valueOf((wifiList.get(i)).frequency).toString());
-                wifiListInfo.add(Integer.valueOf(mainWifi.calculateSignalLevel((wifiList.get(i)).level,10)).toString());
-                wifiListInfo.add(wifiList.get(i).capabilities);
-                values.add(wifiListInfo);
-
-                //If the user chose to use a server to store data, then the data is also sent to the server.
-                if(serverAddress != "FALSE") {
+                //If the user chose to use Google SpreadSheets, then the data is added to a separate container.
+                if(enableSheets.equals("TRUE")) {
+                    //Add the results to the list that is going to be passed to the Sheets API.
+                    List<Object> wifiListInfo = new ArrayList<>();
+                    wifiListInfo.add(Integer.valueOf(i + 1).toString());
+                    wifiListInfo.add((wifiList.get(i)).SSID);
+                    wifiListInfo.add((wifiList.get(i)).BSSID);
+                    wifiListInfo.add(Integer.valueOf((wifiList.get(i)).frequency).toString());
+                    wifiListInfo.add(Integer.valueOf(mainWifi.calculateSignalLevel((wifiList.get(i)).level, 10)).toString());
+                    wifiListInfo.add(wifiList.get(i).capabilities);
+                    values.add(wifiListInfo);
+                }
+                //If the user chose to use a server, then the data is added to a separate container.
+                if(!serverAddress.equals("FALSE")) {
                     //Add the results to the String Builder that is going to be sent to the server.
                     serverData.append(Integer.valueOf(i + 1).toString() + "\n");
                     serverData.append(wifiList.get(i).SSID + "\n");
@@ -486,15 +486,18 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
                 }
             }
 
-            //If the user chose to use a server to store data, then the data is also sent to the server.
-            if(serverAddress != "FALSE") {
+            //If the user chose to use a server, then the data is sent to the server.
+            if(!serverAddress.equals("FALSE")) {
                 //Send the scan result to the server.
                 new RequestHandler(serverAddress, serverData.toString(), mCredential.getSelectedAccountName(), wifiList.size(), 1).execute();
             }
 
-            //Send the retrieved results to the Google Spreadsheet
-            setWifiResults(values);
-            getResultsFromApi();
+            //If the user chose to use Google SpreadSheets then the data is sent to a predefined SpreadSheet.
+            if(enableSheets.equals("TRUE")) {
+                //Send the retrieved results to the Google Spreadsheet
+                setWifiResults(values);
+                getResultsFromApi();
+            }
 
             //Display the scan results to the user
             mainText.setText(sb);

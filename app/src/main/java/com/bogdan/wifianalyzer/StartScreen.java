@@ -20,7 +20,9 @@ public class StartScreen extends Activity {
     Button nextButton, skipButton;
     TextView textView;
     Boolean proceedWithServer;
-    public static final String SERVER_ADDR = "empty";
+    CheckBox sheetsEnable;
+//    public static final String SERVER_ADDR = "";
+//    public static final String ENABLE_SHEETS = "";
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -31,10 +33,12 @@ public class StartScreen extends Activity {
         nextButton = (Button) findViewById(R.id.nextButton);
         textView = (TextView) findViewById(R.id.textView);
         skipButton = (Button) findViewById(R.id.skipButton);
+        sheetsEnable = (CheckBox) findViewById(R.id.sheetsEnable);
+
 
         //Makes a connection to a server or proceeds without it, depending on user preference.
-        nextButton.setOnClickListener(new View.OnClickListener(){
-            public void onClick(View v){
+        nextButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
                 try {
                     proceedWithServer = true;
                     performNextStep(v);
@@ -47,8 +51,8 @@ public class StartScreen extends Activity {
         });
 
         //This gives the user the option to proceed without a connection to a server
-        skipButton.setOnClickListener(new View.OnClickListener(){
-            public void onClick(View v){
+        skipButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
                 try {
                     proceedWithServer = false;
                     performNextStep(v);
@@ -76,20 +80,20 @@ public class StartScreen extends Activity {
 
     //Method to call the next activity and pass it the input from the EditText
     public void performNextStep(View view) throws ExecutionException, InterruptedException {
-                    //Server override//
+        //Server override//
         ///////////////////////////////////////////////
         //String addr = serverInput.getText().toString();
-        String addr = "http://7f1ae6af.ngrok.io";
+        String addr = "http://d6bfe365.ngrok.io";
         ///////////////////////////////////////////////
 
         //Check if the user wants to proceed with a connection to a server.
-        //Unless the user provides a valid server (gets a respons back), the user will not be able to proceed
+        //Unless the user provides a valid server (gets a response back), the user will not be able to proceed
         //Otherwise, a connection will be established and the next activity will be started
-        if(proceedWithServer) {
+        if (proceedWithServer) {
             String status = new RequestHandler(addr, "/greeting", "name", 0, 0).execute().get();
             if (status.isEmpty()) {
                 //Display a message when failing to connect to a server in a Toast
-                String showText = "Can't establish a connection to server.";
+                String showText = "Can't establish a connection to the server.";
                 Toast.makeText(getApplicationContext(), showText, Toast.LENGTH_SHORT).show();
             } else {
                 //Display a message when connected to a server in a Toast
@@ -98,18 +102,37 @@ public class StartScreen extends Activity {
 
                 //Proceed with the next activity.
                 Intent intent = new Intent(this, Analyzer.class);
-                intent.putExtra(SERVER_ADDR, addr);
+                Bundle extras = new Bundle();
+                extras.putString("SERVER_ADDR", addr);
+
+                //Check if the user wants to have the Google Sheets functionality enabled.
+                if(sheetsEnable.isChecked())
+                    extras.putString("ENABLE_SHEETS", "TRUE");
+                else
+                    extras.putString("ENABLE_SHEETS", "FALSE");
+
+                intent.putExtras(extras);
                 startActivity(intent);
             }
         }
         //If a user wants to proceed without connection to a server, the address "FALSE" will be sent
         //as a parameter to the next activity, meaning that the scan results won't be sent to a server.
-        else
-        {
+        else {
             //Uncomment this, used to bypass manual server input
             //addr = "FALSE";
+
+            //Proceed with the next activity.
             Intent intent = new Intent(this, Analyzer.class);
-            intent.putExtra(SERVER_ADDR, addr);
+            Bundle extras = new Bundle();
+            extras.putString("SERVER_ADDR", addr);
+
+            //Check if the user wants to have the Google Sheets functionality enabled.
+            if(sheetsEnable.isChecked())
+                extras.putString("ENABLE_SHEETS", "TRUE");
+            else
+                extras.putString("ENABLE_SHEETS", "FALSE");
+
+            intent.putExtras(extras);
             startActivity(intent);
         }
     }

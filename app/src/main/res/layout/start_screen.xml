@@ -11,16 +11,16 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Enter server address"
+        android:layout_marginTop="44dp"
         android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="65dp" />
+        android:layout_centerHorizontal="true" />
 
     <Button
         android:id="@+id/nextButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Next"
-        android:layout_marginTop="17dp"
+        android:layout_marginTop="15dp"
         android:layout_below="@+id/serverInput"
         android:layout_alignStart="@+id/serverInput" />
 
@@ -32,18 +32,19 @@
         android:inputType="textPersonName"
         android:text=""
         android:layout_below="@+id/textView"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="28dp" />
+        android:layout_marginTop="28dp"
+        android:layout_alignStart="@+id/infoText"
+        android:layout_alignEnd="@+id/skipButton" />
 
     <TextView
         android:id="@+id/infoText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignEnd="@+id/skipButton"
-        android:layout_alignStart="@+id/nextButton"
+        android:layout_marginTop="43dp"
+        android:text="Enter a valid server address and press Next in order to establish a connection. This is used to keep a history of all the scans. Press Skip if you do not wish to have this feature enabled."
         android:layout_below="@+id/nextButton"
-        android:layout_marginTop="44dp"
-        android:text="Enter a valid server address and press Next in order to establish a connection. Press Skip otherwise." />
+        android:layout_alignStart="@+id/sheetsEnable"
+        android:layout_alignEnd="@+id/sheetsEnable" />
 
     <Button
         android:id="@+id/skipButton"
@@ -51,6 +52,16 @@
         android:layout_height="wrap_content"
         android:text="Skip"
         android:layout_above="@+id/infoText"
-        android:layout_alignEnd="@+id/serverInput" />
+        android:layout_alignEnd="@+id/infoText" />
+
+    <CheckBox
+        android:id="@+id/sheetsEnable"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/infoText"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="18dp"
+        android:checked="true"
+        android:text="Send the results to a Google SpreadSheet" />
 
 </RelativeLayout>

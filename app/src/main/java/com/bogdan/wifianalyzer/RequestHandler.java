@@ -21,6 +21,14 @@ class RequestHandler extends AsyncTask<Void, String, String> {
     private Integer mode, size;
     private StringBuilder response = new StringBuilder();
 
+    //Address - the address of the server
+    //Mode - 0 represents a basic GET request, checks if the server is online
+    //     - 1 represents a POST request, creates a JSON object form the received data and sends it
+    //     - 2 represents a DELETE request, used to clear a log file on the server
+    //     - 3 represents a GET request, retrieves the history log from the server
+    //Data - a string containing data that needs to be sent to the server
+    //Size - the number of scan results in a data string, used for the POST request
+    //Name - the name of the current user
     RequestHandler(String address, String data, String name, Integer size, Integer mode) {
         this.address = address;
         this.mode = mode;
@@ -132,5 +140,15 @@ class RequestHandler extends AsyncTask<Void, String, String> {
 
         //Return the response code.
         return String.format("%d", con.getResponseCode());
+    }
+
+    private String getHistoryRequest(String addr, String name) {
+
+        return null;
+    }
+
+    private String clearHistoryRequest(String addr, String name) {
+
+        return null;
     }
 }
