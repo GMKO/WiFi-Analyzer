@@ -55,7 +55,7 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
     private static final String PREF_ACCOUNT_NAME = "accountName";
     private static final String[] SCOPES = { SheetsScopes.SPREADSHEETS };
 
-    Button clearButton, saveButton, scanButton;
+    Button clearButton, saveButton, scanButton, historyButton;
     TextView mainText;
     WifiManager mainWifi;
     WifiReceiver receiverWifi;
@@ -317,6 +317,7 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
         clearButton = (Button) findViewById(R.id.clearButton);
         saveButton = (Button) findViewById(R.id.saveButton);
         scanButton = (Button) findViewById(R.id.scanButton);
+        historyButton = (Button) findViewById(R.id.historyButton);
 
         // Initiate wifi service manager
         mainWifi = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
@@ -524,6 +525,15 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
             scanButton.setOnClickListener(new View.OnClickListener(){
                 public void onClick(View v){
                     mainWifi.startScan();
+                }
+            });
+
+            historyButton.setOnClickListener(new View.OnClickListener(){
+                public void onClick(View v){
+                    if (serverAddress.equals("FALSE")) {
+                        Toast.makeText(getApplicationContext(), "Can't retrieve history, no connection to server.",
+                                Toast.LENGTH_SHORT).show();
+                    }
                 }
             });
         }

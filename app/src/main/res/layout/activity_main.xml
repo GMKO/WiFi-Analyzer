@@ -43,4 +43,12 @@
         android:layout_height="fill_parent"
         android:gravity="center_vertical|center_horizontal" />
 
+    <Button
+        android:id="@+id/historyButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/scanButton"
+        android:layout_below="@+id/scanButton"
+        android:text="History" />
+
 </RelativeLayout>

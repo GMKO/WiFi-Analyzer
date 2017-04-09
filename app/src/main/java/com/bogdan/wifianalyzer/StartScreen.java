@@ -83,7 +83,7 @@ public class StartScreen extends Activity {
         //Server override//
         ///////////////////////////////////////////////
         //String addr = serverInput.getText().toString();
-        String addr = "http://d6bfe365.ngrok.io";
+        String addr = "http://e7c4b2e6.ngrok.io";
         ///////////////////////////////////////////////
 
         //Check if the user wants to proceed with a connection to a server.
@@ -119,7 +119,7 @@ public class StartScreen extends Activity {
         //as a parameter to the next activity, meaning that the scan results won't be sent to a server.
         else {
             //Uncomment this, used to bypass manual server input
-            //addr = "FALSE";
+            addr = "FALSE";
 
             //Proceed with the next activity.
             Intent intent = new Intent(this, Analyzer.class);
