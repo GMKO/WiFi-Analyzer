@@ -430,7 +430,7 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
             acquireServices();
             Log.d("LOG","Updated connection list");
 
-            StringBuilder serverData = new StringBuilder();
+            final StringBuilder serverData = new StringBuilder();
             final StringBuilder sb = new StringBuilder();
             List<List<Object>> values = new ArrayList<>();
 
@@ -496,8 +496,10 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
             //If the user chose to use Google SpreadSheets then the data is sent to a predefined SpreadSheet.
             if(enableSheets.equals("TRUE")) {
                 //Send the retrieved results to the Google Spreadsheet
-                setWifiResults(values);
-                getResultsFromApi();
+//                setWifiResults(values);
+//                getResultsFromApi();
+                new MakeRequestTask(mCredential, values).execute();
+
             }
 
             //Display the scan results to the user
@@ -533,6 +535,16 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
                     if (serverAddress.equals("FALSE")) {
                         Toast.makeText(getApplicationContext(), "Can't retrieve history, no connection to server.",
                                 Toast.LENGTH_SHORT).show();
+                    } else {
+                        //new RequestHandler(serverAddress, serverData.toString(), mCredential.getSelectedAccountName(), wifiList.size(), 3).execute();
+                        Intent historyIntent = new Intent(v.getContext(), HistoryScreen.class);
+                        Bundle extras = new Bundle();
+
+                        extras.putString("SERVER_ADDR", serverAddress);
+                        extras.putString("NAME", mCredential.getSelectedAccountName());
+
+                        historyIntent.putExtras(extras);
+                        startActivity(historyIntent);
                     }
                 }
             });

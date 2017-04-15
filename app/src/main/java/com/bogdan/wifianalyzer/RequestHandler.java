@@ -52,7 +52,11 @@ class RequestHandler extends AsyncTask<Void, String, String> {
             }
         }
         if(mode == 2) {
-            return null;
+            try {
+                return clearHistoryRequest(address, name);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
         if(mode == 3) {
             return getHistoryRequest(address, name);
@@ -107,12 +111,12 @@ class RequestHandler extends AsyncTask<Void, String, String> {
 
                 JSONObject dataJson = new JSONObject();
 
-                dataJson.put("Network", splitScanData[i]);
-                dataJson.put("SSID", splitScanData[i+1]);
-                dataJson.put("BSSID", splitScanData[i+2]);
-                dataJson.put("Frequency", splitScanData[i+3]);
-                dataJson.put("Intensity", splitScanData[i+4]);
-                dataJson.put("Capabilities", splitScanData[i+5]);
+                dataJson.put("network", splitScanData[i]);
+                dataJson.put("ssid", splitScanData[i+1]);
+                dataJson.put("bssid", splitScanData[i+2]);
+                dataJson.put("frequency", splitScanData[i+3]);
+                dataJson.put("intensity", splitScanData[i+4]);
+                dataJson.put("capabilities", splitScanData[i+5]);
 
                 dataArrayJson.put(dataJson);
             }
@@ -205,8 +209,17 @@ class RequestHandler extends AsyncTask<Void, String, String> {
         return response.toString();
     }
 
-    private String clearHistoryRequest(String addr, String name) {
+    private String clearHistoryRequest(String addr, String name) throws IOException {
 
-        return null;
+        URL url = new URL(addr + "/scan?name=" + name);
+//        HttpURLConnection httpCon = (HttpURLConnection) url.openConnection();
+//        httpCon.setDoOutput(true);
+//        httpCon.setRequestProperty("Content-Type", "application/x-www-form-urlencoded" );
+//        httpCon.setRequestMethod("DELETE");
+//        httpCon.connect();
+
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("DELETE");
+        return String.format("%d", connection.getResponseCode());
     }
 }

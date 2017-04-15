@@ -28,6 +28,9 @@
         <activity
             android:name="com.bogdan.wifianalyzer.Analyzer">
         </activity>
+        <activity
+            android:name="com.bogdan.wifianalyzer.HistoryScreen">
+        </activity>
     </application>
 
 </manifest>
