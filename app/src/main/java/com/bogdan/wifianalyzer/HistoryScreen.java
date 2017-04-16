@@ -3,27 +3,19 @@ package com.bogdan.wifianalyzer;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.method.ScrollingMovementMethod;
 import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.util.concurrent.ExecutionException;
+import com.google.gson.Gson;
 
-/**
- * Created by Bogdan on 15-Apr-17.
- */
+import java.util.concurrent.ExecutionException;
 
 public class HistoryScreen extends Activity {
 
-    EditText serverInput;
-    Button nextButton, skipButton;
-    TextView textView;
-    Boolean proceedWithServer;
-    CheckBox sheetsEnable;
     String serverAddress;
     String name;
 
@@ -34,6 +26,7 @@ public class HistoryScreen extends Activity {
 
         Button clearButton = (Button) findViewById(R.id.clearButton);
         final TextView historyText = (TextView) findViewById(R.id.historyText);
+        historyText.setMovementMethod(new ScrollingMovementMethod());
 
         //Get the server address and username
         Intent intent = getIntent();
@@ -42,8 +35,32 @@ public class HistoryScreen extends Activity {
         name = extras.getString("NAME");
 
         try {
+            Gson gson = new Gson();
+            StringBuilder sb = new StringBuilder();
             String response = new RequestHandler(serverAddress, "Not needed", name, 0, 3).execute().get();
-            historyText.setText(response);
+
+            ScanHistory history = gson.fromJson(response,ScanHistory.class);
+            sb.append(String.format("Number of scans: %d\n\n",history.getEntries()));
+
+            //Log.d("LOG",String.format("%d\n",history.getEntries()));
+
+            for(int i=0; i<history.getEntries(); i++) {
+                ScanResult res = history.getHistory().get(i);
+
+                sb.append(String.format("Scan %d, performed at %s \n\n", i+1, res.getTimestamp()));
+
+                for(ScanData data : res.getData()) {
+                    sb.append("Network #" + data.getNetwork() + "\n");
+                    sb.append("SSID: " + data.getSSID() + "\n");
+                    sb.append("BSSID: " + data.getBSSID() + "\n");
+                    sb.append("Frequency: " + data.getFrequency() + "\n");
+                    sb.append("Intensity: " + data.getIntensity() + "\n");
+                    sb.append("Capabilities: " + data.getCapabilities() + "\n\n");
+                }
+                sb.append("\n");
+            }
+            historyText.setText(sb);
+
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (ExecutionException e) {
@@ -54,7 +71,7 @@ public class HistoryScreen extends Activity {
             public void onClick(View v){
                 try {
                     String response = new RequestHandler(serverAddress, "Not needed", name, 0, 2).execute().get();
-                    historyText.setText("");
+                    historyText.setText("Number of scans: 0");
                     String showText = "Successfully cleared the history.";
                     Toast.makeText(getApplicationContext(), showText, Toast.LENGTH_SHORT).show();
                 } catch (InterruptedException e) {

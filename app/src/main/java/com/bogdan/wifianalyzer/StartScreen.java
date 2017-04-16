@@ -83,7 +83,7 @@ public class StartScreen extends Activity {
         //Server override//
         ///////////////////////////////////////////////
         //String addr = serverInput.getText().toString();
-        String addr = "http://3dca1865.ngrok.io";
+        String addr = "http://8f8732cf.ngrok.io";
         ///////////////////////////////////////////////
 
         //Check if the user wants to proceed with a connection to a server.
