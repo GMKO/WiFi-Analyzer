@@ -22,35 +22,45 @@ class RequestHandler extends AsyncTask<Void, String, String> {
     private Integer mode, size;
     private StringBuilder response = new StringBuilder();
 
-    //Address - the address of the server
-    //Mode - 0 represents a basic GET request, checks if the server is online
-    //     - 1 represents a POST request, creates a JSON object form the received data and sends it
-    //     - 2 represents a DELETE request, used to clear a log file on the server
-    //     - 3 represents a GET request, retrieves the history log from the server
-    //Data - a string containing data that needs to be sent to the server
-    //Size - the number of scan results in a data string, used for the POST request
-    //Name - the name of the current user
+    /**
+     * @param address the address of the server.
+     * @param data a string containing data that needs to be sent to the server.
+     * @param name the name of the current user.
+     * @param size the number of networks in a data string, used for the POST request.
+     * @param mode the type of request that is going to be sent to the server.
+     *          - 0 GET request, checks if the server is online.
+     *          - 1 POST request, creates a JSON object form the received data and sends it.
+     *          - 2 DELETE request, used to clear a log file on the server.
+     *          - 3 GET request, retrieves the history log from the server.
+     */
     RequestHandler(String address, String data, String name, Integer size, Integer mode) {
         this.address = address;
-        this.mode = mode;
         this.data = data;
         this.name = name;
         this.size = size;
+        this.mode = mode;
     }
 
     @Override
+    /**
+     * Checks the value of the mode variable and makes the appropriate request based on it.
+     */
     public String doInBackground(Void... params) {
         if(mode == 0) {
             return getRequest(address + data);
         }
+
         if(mode == 1) {
+            //Creates a JSON object based on the scan data.
             JSONObject jsonData = parseData(size, name, data);
             try {
+                //The resulted JSON is then sent to the server in a POST request.
                 return postRequest(address, jsonData);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
+
         if(mode == 2) {
             try {
                 return clearHistoryRequest(address, name);
@@ -58,6 +68,7 @@ class RequestHandler extends AsyncTask<Void, String, String> {
                 e.printStackTrace();
             }
         }
+
         if(mode == 3) {
             return getHistoryRequest(address, name);
         }
@@ -69,6 +80,11 @@ class RequestHandler extends AsyncTask<Void, String, String> {
         super.onPostExecute(result);
     }
 
+    /**
+     * Retrieves the system time and formats it in a more
+     * user friendly mode (hh:mm:ss).
+     * @return the current time
+     */
     public String getTime() {
         Calendar rightNow = Calendar.getInstance();
 
@@ -97,15 +113,23 @@ class RequestHandler extends AsyncTask<Void, String, String> {
         return h+m+s;
     }
 
-    //Takes the input data from the scan and converts it to a JSON object.
-    private JSONObject parseData(Integer size, String name, String scanData) {
+    /**
+     * Takes the input data from the scan and converts it to a JSON object.
+     * @param size the number of networks present in the scanData string
+     * @param name the name of the current user. Used to identify the resource that corresponds
+     *             to the user on the server.
+     * @param scanData the data returned by the WifiManager after a scan. It has been formatted in
+     *                 such a way so that only the necessary information is present in the string.
+     * @return a JSON representation of the data given as input.
+     */
+    public JSONObject parseData(Integer size, String name, String scanData) {
         String[] splitScanData = scanData.split("\n");
         JSONObject scanJson = new JSONObject();
 
         try {
-            JSONArray dataArrayJson = new JSONArray();
             scanJson.put("name", name);
             scanJson.put("timestamp", getTime());
+            JSONArray dataArrayJson = new JSONArray();
 
             for(Integer i=0; i<size*6; i+=6) {
 
@@ -126,20 +150,28 @@ class RequestHandler extends AsyncTask<Void, String, String> {
             Log.d("REQ", "unexpected JSON exception", e);
         }
 
-        //Log.d("JSON", scanJson.toString());
         return scanJson;
     }
 
-    //Makes a basic GET request at the specified address, for the "data" resource
+    /**
+     * Makes a basic GET request at the specified address. This will only be used to
+     * check if the server is online or the specified address is a valid one. This will not be used
+     * to retrieve any meaningful information. Tha call to this method is done with "address+data"
+     * as a parameter where "data" is a resource on the server.
+     * @param addr the server address with a path to a certain resource specified.
+     * @return the response code of the server.
+     */
     private String getRequest(String addr) {
         URL url;
         HttpURLConnection urlConnection = null;
         try {
+            //Opens a connection to the URL.
             url = new URL(addr);
             urlConnection = (HttpURLConnection) url.openConnection();
             InputStream in = urlConnection.getInputStream();
             InputStreamReader isw = new InputStreamReader(in);
 
+            //Parses the response.
             int data = isw.read();
             while (data != -1) {
                 char current = (char) data;
@@ -153,11 +185,16 @@ class RequestHandler extends AsyncTask<Void, String, String> {
                 urlConnection.disconnect();
             }
         }
-        //Log.d("LOG", response.toString());
         return response.toString();
     }
 
-    //Makes a post request at the address, with the JSON object.
+    /**
+     * Makes a POST request at the address.
+     * @param addr the address of the server
+     * @param scan the JSON object containing all the scan data.
+     * @return the response code of the server.
+     * @throws IOException
+     */
     private String postRequest(String addr, JSONObject scan) throws IOException {
         URL url = new URL(addr + "/scan");
 
@@ -182,16 +219,23 @@ class RequestHandler extends AsyncTask<Void, String, String> {
         return String.format("%d", con.getResponseCode());
     }
 
+    /**
+     * Makes a GET request at the address for the history log assigned to the current user.
+     * @param addr the server address.
+     * @param name the name of the user making the request.
+     * @return a serialized JSON object that represents the server's response.
+     */
     private String getHistoryRequest(String addr, String name) {
-
-        URL url;
         HttpURLConnection urlConnection = null;
+
         try {
-            url = new URL(addr + "/scan?name=" + name);
+            //Open the connection to the specified URL.
+            URL url = new URL(addr + "/scan?name=" + name);
             urlConnection = (HttpURLConnection) url.openConnection();
             InputStream in = urlConnection.getInputStream();
             InputStreamReader isw = new InputStreamReader(in);
 
+            //Parse the retrieved data.
             int data = isw.read();
             while (data != -1) {
                 char current = (char) data;
@@ -201,25 +245,30 @@ class RequestHandler extends AsyncTask<Void, String, String> {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
+            //Close the connection when the response has been finished parsing.
             if (urlConnection != null) {
                 urlConnection.disconnect();
             }
         }
-        Log.d("LOG", response.toString());
+
         return response.toString();
     }
 
+    /**
+     * Makes a DELETE request at the address. This cleans the history log on the server that
+     * corresponds to the user making the request.
+     * @param addr the address of the server.
+     * @param name the name of the user making the request.
+     * @return the response code from the server.
+     * @throws IOException
+     */
     private String clearHistoryRequest(String addr, String name) throws IOException {
-
+        //Open the connection to the specified URL.
         URL url = new URL(addr + "/scan?name=" + name);
-//        HttpURLConnection httpCon = (HttpURLConnection) url.openConnection();
-//        httpCon.setDoOutput(true);
-//        httpCon.setRequestProperty("Content-Type", "application/x-www-form-urlencoded" );
-//        httpCon.setRequestMethod("DELETE");
-//        httpCon.connect();
-
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("DELETE");
-        return String.format("%d", connection.getResponseCode());
+
+        //Send the DELETE request.
+        return  String.format("%d", connection.getResponseCode());
     }
 }

@@ -45,8 +45,6 @@ import pub.devrel.easypermissions.EasyPermissions;
 public class Analyzer extends Activity implements EasyPermissions.PermissionCallbacks {
     GoogleAccountCredential mCredential;
 
-    List<List<Object>> wifiResults;
-
     static final int REQUEST_ACCOUNT_PICKER = 1000;
     static final int REQUEST_AUTHORIZATION = 1001;
     static final int REQUEST_GOOGLE_PLAY_SERVICES = 1002;
@@ -62,10 +60,6 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
     List<ScanResult> wifiList;
     String serverAddress;
     String enableSheets;
-
-    public void setWifiResults(List<List<Object>> data) {
-        this.wifiResults = data;
-    }
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -88,6 +82,7 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
                     Toast.LENGTH_SHORT).show();
         }
 
+        //Propmts the user to select a Google Account.
         mCredential = GoogleAccountCredential.usingOAuth2(
                 getApplicationContext(), Arrays.asList(SCOPES))
                 .setBackOff(new ExponentialBackOff());
@@ -126,11 +121,6 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
         }
     }
 
-    public void getResultsFromApi() {
-        new MakeRequestTask(mCredential, this.wifiResults).execute();
-    }
-
-
     /**
      * Attempts to set the account used with the API credentials. If an account
      * name was previously saved it will use that one; otherwise an account
@@ -149,7 +139,6 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
                     .getString(PREF_ACCOUNT_NAME, null);
             if (accountName != null) {
                 mCredential.setSelectedAccountName(accountName);
-                //getResultsFromApi();
             } else {
                 // Start a dialog from which the user can choose an account
                 startActivityForResult(
@@ -186,8 +175,6 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
                     String setText = "This app requires Google Play Services. Please install " +
                             "Google Play Services on your device and relaunch this app.";
                     mainText.setText(setText);
-                } else {
-                    //getResultsFromApi();
                 }
                 break;
             case REQUEST_ACCOUNT_PICKER:
@@ -202,14 +189,10 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
                         editor.putString(PREF_ACCOUNT_NAME, accountName);
                         editor.apply();
                         mCredential.setSelectedAccountName(accountName);
-                        //getResultsFromApi();
                     }
                 }
                 break;
             case REQUEST_AUTHORIZATION:
-                if (resultCode == RESULT_OK) {
-                    //getResultsFromApi();
-                }
                 break;
         }
     }
@@ -366,7 +349,11 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
         super.onResume();
     }
 
-    //Creates the local file and writes the scan result to it
+    /**
+     * Creates the local file and writes the scan result in it.
+     * The path of the file will be /storage/emulated/0/Documents/log.txt
+     * @param result the data that must be written
+     */
     public void saveResults(String result) throws IOException {
         try {
             //Set the fileName and the path
@@ -393,7 +380,11 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
         }
     }
 
-    //Retrieves the system time and formats the output
+    /**
+     * Retrieves the system time and formats it in a more
+     * user friendly mode (hh:mm:ss).
+     * @return the current time
+     */
     public String getTime() {
         Calendar rightNow = Calendar.getInstance();
 
@@ -422,19 +413,24 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
         return h+m+s;
     }
 
-    // Broadcast receiver class calls its receive method when the number of wifi connections changes
+    /**
+     * Broadcast receiver class calls its receive method when the number of wifi connections changes.
+     */
     class WifiReceiver extends BroadcastReceiver {
 
-        // This method is called when the number of wifi connections changes
+        /**
+         * This method is called when the number of wifi connections changes, when the scan button
+         * is pressed or when the application first starts. This method is called when the startScan()
+         * method of a WifiManager returns a result.
+         * @param c the current context
+         * @param intent the current intent
+         */
         public void onReceive(Context c, Intent intent) {
             acquireServices();
-            Log.d("LOG","Updated connection list");
 
             final StringBuilder serverData = new StringBuilder();
             final StringBuilder sb = new StringBuilder();
             List<List<Object>> values = new ArrayList<>();
-
-            //sb = new StringBuilder();
 
             wifiList = mainWifi.getScanResults();
             sb.append("\nNumber of WiFi connections :"
@@ -452,6 +448,7 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
             data1.add("Capabilities");
             values.add(data1);
 
+            //For each network found, perform the following steps
             for(int i = 0; i < wifiList.size(); i++){
 
                 //Add the results to the String Builder that is going to be displayed to the user.
@@ -475,6 +472,7 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
                     wifiListInfo.add(wifiList.get(i).capabilities);
                     values.add(wifiListInfo);
                 }
+
                 //If the user chose to use a server, then the data is added to a separate container.
                 if(!serverAddress.equals("FALSE")) {
                     //Add the results to the String Builder that is going to be sent to the server.
@@ -489,22 +487,18 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
 
             //If the user chose to use a server, then the data is sent to the server.
             if(!serverAddress.equals("FALSE")) {
-                //Send the scan result to the server.
                 new RequestHandler(serverAddress, serverData.toString(), mCredential.getSelectedAccountName(), wifiList.size(), 1).execute();
             }
 
             //If the user chose to use Google SpreadSheets then the data is sent to a predefined SpreadSheet.
             if(enableSheets.equals("TRUE")) {
-                //Send the retrieved results to the Google Spreadsheet
-//                setWifiResults(values);
-//                getResultsFromApi();
                 new MakeRequestTask(mCredential, values).execute();
-
             }
 
-            //Display the scan results to the user
+            //Display the scan results to the user.
             mainText.setText(sb);
 
+            //Clears the screen of any scan results.
             clearButton.setOnClickListener(new View.OnClickListener(){
                 public void onClick(View v){
                     mainText.setText("\nNumber of WiFi connections :"
@@ -514,6 +508,7 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
                 }
             });
 
+            //Saves the scan results to a local log.txt file.
             saveButton.setOnClickListener(new View.OnClickListener(){
                 public void onClick(View v){
                     try {
@@ -524,25 +519,29 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
                 }
             });
 
+            //Performs a scan when the user demands it.
             scanButton.setOnClickListener(new View.OnClickListener(){
                 public void onClick(View v){
                     mainWifi.startScan();
                 }
             });
 
+            //Makes a request to the server in order to get a history of all the performed scans.
+            //This also starts a new activity.
             historyButton.setOnClickListener(new View.OnClickListener(){
                 public void onClick(View v){
                     if (serverAddress.equals("FALSE")) {
                         Toast.makeText(getApplicationContext(), "Can't retrieve history, no connection to server.",
                                 Toast.LENGTH_SHORT).show();
                     } else {
-                        //new RequestHandler(serverAddress, serverData.toString(), mCredential.getSelectedAccountName(), wifiList.size(), 3).execute();
+                        //Sends some additional data to the next activity (the address of the server and the name of the user).
                         Intent historyIntent = new Intent(v.getContext(), HistoryScreen.class);
                         Bundle extras = new Bundle();
 
                         extras.putString("SERVER_ADDR", serverAddress);
                         extras.putString("NAME", mCredential.getSelectedAccountName());
 
+                        //Start the new activity.
                         historyIntent.putExtras(extras);
                         startActivity(historyIntent);
                     }

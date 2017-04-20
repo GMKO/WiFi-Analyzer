@@ -28,25 +28,26 @@ public class HistoryScreen extends Activity {
         final TextView historyText = (TextView) findViewById(R.id.historyText);
         historyText.setMovementMethod(new ScrollingMovementMethod());
 
-        //Get the server address and username
+        //Get the server address and username from the past activity.
         Intent intent = getIntent();
         Bundle extras = intent.getExtras();
         serverAddress = extras.getString("SERVER_ADDR");
         name = extras.getString("NAME");
 
         try {
+            //Make a GET request to the server for the history log.
             Gson gson = new Gson();
             StringBuilder sb = new StringBuilder();
             String response = new RequestHandler(serverAddress, "Not needed", name, 0, 3).execute().get();
 
+            //Map the JSON response from the server to a ScanHistory object that matches the structure of the JSON response.
             ScanHistory history = gson.fromJson(response,ScanHistory.class);
-            sb.append(String.format("Number of scans: %d\n\n",history.getEntries()));
 
-            //Log.d("LOG",String.format("%d\n",history.getEntries()));
+            //Format the text that will be displayed on the screen based on the information contained in the ScanHistory object.
+            sb.append(String.format("Number of scans: %d\n\n",history.getEntries()));
 
             for(int i=0; i<history.getEntries(); i++) {
                 ScanResult res = history.getHistory().get(i);
-
                 sb.append(String.format("Scan %d, performed at %s \n\n", i+1, res.getTimestamp()));
 
                 for(ScanData data : res.getData()) {
@@ -67,13 +68,17 @@ public class HistoryScreen extends Activity {
             e.printStackTrace();
         }
 
+        //Clear history button listener. Sends a DELETE request to the server with the name of the current user.
         clearButton.setOnClickListener(new View.OnClickListener(){
             public void onClick(View v){
                 try {
                     String response = new RequestHandler(serverAddress, "Not needed", name, 0, 2).execute().get();
                     historyText.setText("Number of scans: 0");
-                    String showText = "Successfully cleared the history.";
-                    Toast.makeText(getApplicationContext(), showText, Toast.LENGTH_SHORT).show();
+
+                    if(response.equals("200")) {
+                        String showText = "Successfully cleared the history.";
+                        Toast.makeText(getApplicationContext(), showText, Toast.LENGTH_SHORT).show();
+                    }
                 } catch (InterruptedException e) {
                     String showText = "There was an error, failed clearing the history.";
                     Toast.makeText(getApplicationContext(), showText, Toast.LENGTH_SHORT).show();

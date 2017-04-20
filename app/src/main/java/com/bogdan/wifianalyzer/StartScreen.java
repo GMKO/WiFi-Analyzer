@@ -21,8 +21,6 @@ public class StartScreen extends Activity {
     TextView textView;
     Boolean proceedWithServer;
     CheckBox sheetsEnable;
-//    public static final String SERVER_ADDR = "";
-//    public static final String ENABLE_SHEETS = "";
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -80,16 +78,17 @@ public class StartScreen extends Activity {
 
     //Method to call the next activity and pass it the input from the EditText
     public void performNextStep(View view) throws ExecutionException, InterruptedException {
-        //Server override//
+        //Server address override//
         ///////////////////////////////////////////////
         //String addr = serverInput.getText().toString();
         String addr = "http://8f8732cf.ngrok.io";
         ///////////////////////////////////////////////
 
         //Check if the user wants to proceed with a connection to a server.
-        //Unless the user provides a valid server (gets a response back), the user will not be able to proceed
-        //Otherwise, a connection will be established and the next activity will be started
+        //Unless the user provides a valid server (gets a response back), the user will not be able to proceed.
+        //Otherwise, a connection will be established and the next activity will be started.
         if (proceedWithServer) {
+            //Basic GET request, to check if the server is online or the address correct.
             String status = new RequestHandler(addr, "/greeting", "name", 0, 0).execute().get();
             if (status.isEmpty()) {
                 //Display a message when failing to connect to a server in a Toast
@@ -100,7 +99,7 @@ public class StartScreen extends Activity {
                 String showText = "Connected to server.";
                 Toast.makeText(getApplicationContext(), showText, Toast.LENGTH_SHORT).show();
 
-                //Proceed with the next activity.
+                //Send some meaningful data to the main activity
                 Intent intent = new Intent(this, Analyzer.class);
                 Bundle extras = new Bundle();
                 extras.putString("SERVER_ADDR", addr);
@@ -111,6 +110,7 @@ public class StartScreen extends Activity {
                 else
                     extras.putString("ENABLE_SHEETS", "FALSE");
 
+                //Start the new activity with the additional information.
                 intent.putExtras(extras);
                 startActivity(intent);
             }
@@ -118,10 +118,9 @@ public class StartScreen extends Activity {
         //If a user wants to proceed without connection to a server, the address "FALSE" will be sent
         //as a parameter to the next activity, meaning that the scan results won't be sent to a server.
         else {
-            //Uncomment this, used to bypass manual server input
             addr = "FALSE";
 
-            //Proceed with the next activity.
+            //Send some meaningful data to the main activity
             Intent intent = new Intent(this, Analyzer.class);
             Bundle extras = new Bundle();
             extras.putString("SERVER_ADDR", addr);
@@ -132,6 +131,7 @@ public class StartScreen extends Activity {
             else
                 extras.putString("ENABLE_SHEETS", "FALSE");
 
+            //Start the new activity with the additional information.
             intent.putExtras(extras);
             startActivity(intent);
         }
