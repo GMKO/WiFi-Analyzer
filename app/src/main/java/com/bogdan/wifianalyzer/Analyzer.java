@@ -292,6 +292,9 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
         dialog.show();
     }
 
+    /**
+     * Starts the mainWifi service and retrieves the list of connections.
+     */
     public void getConnectionList(){
         setContentView(R.layout.activity_main);
         mainText = (TextView) findViewById(R.id.mainText);

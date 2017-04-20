@@ -76,13 +76,19 @@ public class StartScreen extends Activity {
         super.onResume();
     }
 
-    //Method to call the next activity and pass it the input from the EditText
+    /**
+     * Method to call the main activity. It will pass to it the server address and the option chose
+     * by the user whether to use the Google Sheets feature or not.
+     * @param view the current view
+     * @throws ExecutionException
+     * @throws InterruptedException
+     */
     public void performNextStep(View view) throws ExecutionException, InterruptedException {
         //Server address override//
-        ///////////////////////////////////////////////
-        //String addr = serverInput.getText().toString();
-        String addr = "http://8f8732cf.ngrok.io";
-        ///////////////////////////////////////////////
+        /////////////////////////////////////////////
+        //String addr = "http://8f8732cf.ngrok.io";//
+        /////////////////////////////////////////////
+        String addr = serverInput.getText().toString();
 
         //Check if the user wants to proceed with a connection to a server.
         //Unless the user provides a valid server (gets a response back), the user will not be able to proceed.
