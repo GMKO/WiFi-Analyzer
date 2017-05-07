@@ -53,7 +53,7 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
     private static final String PREF_ACCOUNT_NAME = "accountName";
     private static final String[] SCOPES = { SheetsScopes.SPREADSHEETS };
 
-    Button clearButton, saveButton, scanButton, historyButton;
+    Button accountButton, clearButton, saveButton, scanButton, historyButton;
     TextView mainText;
     WifiManager mainWifi;
     WifiReceiver receiverWifi;
@@ -300,6 +300,7 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
         mainText = (TextView) findViewById(R.id.mainText);
         mainText.setMovementMethod(new ScrollingMovementMethod());
 
+        accountButton = (Button) findViewById(R.id.accountButton);
         clearButton = (Button) findViewById(R.id.clearButton);
         saveButton = (Button) findViewById(R.id.saveButton);
         scanButton = (Button) findViewById(R.id.scanButton);
@@ -526,6 +527,15 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
             scanButton.setOnClickListener(new View.OnClickListener(){
                 public void onClick(View v){
                     mainWifi.startScan();
+                }
+            });
+
+            accountButton.setOnClickListener(new View.OnClickListener(){
+                public void onClick(View v){
+                    // Start a dialog from which the user can choose an account
+                    startActivityForResult(
+                            mCredential.newChooseAccountIntent(),
+                            REQUEST_ACCOUNT_PICKER);
                 }
             });
 
