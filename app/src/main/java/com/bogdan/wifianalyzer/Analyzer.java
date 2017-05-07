@@ -93,7 +93,7 @@ public class Analyzer extends Activity implements EasyPermissions.PermissionCall
             //After this point you wait for callback in onRequestPermissionsResult(int, String[], int[]) overriden method
             //Ask for location permission (to scan the WiFi)
             if((checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
-                || (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED))
+                    || (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED))
                 requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION,Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);
 
             getConnectionList();
